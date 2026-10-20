@@ -8,6 +8,8 @@ Messages come from the owner in chat, or from the app through the webhook routin
 - **Next episode: <id>**: run every step for that show.
 - **Fix: <id> <epNN>**: follow `pipeline/6-fix.md`.
 
+The pipeline may have changed since a show was started. Before working on a show, bring its files up to date with the current steps (names, formats), without remaking any videos.
+
 Run the steps in order: `1-bible.md`, `2-episode.md`, `3-references.md`, `4-clips.md`, `5-publish.md`. A step never redoes an output that already exists, so a run that stopped halfway can simply be started again.
 
 The current episode is the lowest-numbered `epNN` without a finished `epNN.mp4`. If all episodes are finished, it is the next number. A new show starts at `ep01`.
