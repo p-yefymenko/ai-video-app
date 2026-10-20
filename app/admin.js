@@ -2,11 +2,19 @@
 
 const key = localStorage.getItem('adminKey') || prompt('Admin key');
 localStorage.setItem('adminKey', key);
-const auth = { authorization: `Bearer ${key}` };
 
-const put = (path, body) => fetch(`/files/${encodeURI(path)}`, { method: 'PUT', headers: auth, body });
-const tellBot = task => fetch('/api/bot', { method: 'POST', headers: auth, body: JSON.stringify({ task }) })
-  .then(r => alert(r.ok ? 'Sent to the bot' : `Failed: ${r.status}`));
+// Sends a request with the admin key. If the server refuses the key, asks for it again.
+const send = (url, options) => fetch(url, { ...options, headers: { authorization: `Bearer ${key}` } }).then(r => {
+  if (r.status === 401) {
+    localStorage.removeItem('adminKey');
+    alert('Wrong admin key');
+    location.reload();
+  }
+  return r;
+});
+const put = (path, body) => send(`/files/${encodeURI(path)}`, { method: 'PUT', body });
+const tellBot = task => send('/api/bot', { method: 'POST', body: JSON.stringify({ task }) })
+  .then(r => r.status !== 401 && alert(r.ok ? 'Sent to the bot' : `Failed: ${r.status}`));
 
 const root = document.getElementById('admin');
 home();
@@ -24,7 +32,7 @@ async function home() {
 
 async function deleteShow(show) {
   if (!confirm(`Delete "${show.title || show.id}" and all its episodes from the app?`)) return;
-  await fetch(`/files/shows/${show.id}/`, { method: 'DELETE', headers: auth });
+  await send(`/files/shows/${show.id}/`, { method: 'DELETE' });
   home();
 }
 
