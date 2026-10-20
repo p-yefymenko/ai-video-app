@@ -1,6 +1,6 @@
 // The backend. Every piece of data is a file in R2:
 //   shows/<id>/show.json, shows/<id>/cover.jpg
-//   shows/<id>/epNN.json, shows/<id>/epNN.mp4, shows/<id>/epNN/<shot>.mp4
+//   shows/<id>/epNN.json, shows/<id>/epNN.mp4, shows/<id>/epNN/<clip>.mp4
 //   scripts/<file>   show scripts uploaded from the admin page
 // Anyone can read. Writing needs the admin key. /api/bot wakes the Grok Bot.
 

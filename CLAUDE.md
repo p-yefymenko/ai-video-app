@@ -24,6 +24,6 @@ The owner must be able to read and understand the whole project in minutes. Ever
 ## Conventions
 
 - Every command a person runs is a script in `package.json`.
-- Show ids are kebab-case (`barista-vampire`). Episodes are `ep01`, `ep02`, …; shots are `01`, `02`, … inside an episode.
+- Show ids are kebab-case (`barista-vampire`). Episodes are `ep01`, `ep02`, …; clips are `01`, `02`, … inside an episode.
 - Video is vertical 9:16.
 - Keep `README.md` in sync whenever a step, file, or command changes.

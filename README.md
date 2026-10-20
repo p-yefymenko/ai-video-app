@@ -7,7 +7,7 @@ A vertical micro-drama app (like ReelShort) whose shows are made by AI. Hand it 
 ## How it works
 
 1. **New show:** in the admin page, attach the script (or type a description) and press Create. The bot plans the whole story as one-minute episodes and makes episode 1.
-2. **Review:** the episode appears in admin as a draft. Leave notes pinned to a second of a clip, or set where a clip should start and end. Then press **Send notes and cuts to the bot**: it fixes them and uploads a new draft.
+2. **Review:** the episode appears in admin as a draft. Leave notes pinned to a second of the episode or of a clip, or set where a clip should start and end. Then press **Send notes and cuts to the bot**: it fixes them and uploads a new draft.
 3. **Publish**, then **Next episode**. When the script runs out, the bot continues the story itself.
 
 The admin page wakes the bot through a webhook routine. You can also message the bot in chat: `New show: …`, `Next episode: <id>`, `Fix: <id> <epNN>`.
@@ -19,9 +19,9 @@ Each step is one file in `pipeline/`. A step skips work whose output already exi
 | Step | File | Output (in `/workspace/shows/<id>/` on the bot's computer) |
 |---|---|---|
 | 1 | `1-bible.md` | `show.md`: characters (look + voice), places, style, the list of episodes |
-| 2 | `2-episode.md` | `epNN/shots.md`: the episode as a list of shots (up to 15 s each) with dialogue |
+| 2 | `2-episode.md` | `epNN/clips.md`: the episode, directed as a list of clips (one generation each, up to 15 s, cuts allowed) |
 | 3 | `3-references.md` | `refs/<id>.png`: one reference image per character and place |
-| 4 | `4-clips.md` | `epNN/<shot>.mp4`: one 9:16 clip per shot, made from the reference images |
+| 4 | `4-clips.md` | `epNN/<clip>.mp4`: one 9:16 video per clip, made from the reference images |
 | 5 | `5-publish.md` | `epNN.mp4`, cut and joined with ffmpeg, uploaded to the app as a draft |
 | 6 | `6-fix.md` | only for `Fix`: applies the owner's notes and cuts, then reruns steps 4–5 |
 
@@ -36,7 +36,7 @@ shows/<id>/show.json      title, description
 shows/<id>/cover.jpg
 shows/<id>/epNN.json      title, status (draft/published), trims, notes
 shows/<id>/epNN.mp4       the episode
-shows/<id>/epNN/<shot>.mp4
+shows/<id>/epNN/<clip>.mp4
 scripts/<file>            scripts uploaded from admin
 ```
 

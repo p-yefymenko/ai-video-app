@@ -44,17 +44,17 @@ async function editEpisode(show, name) {
 
   const notesEl = h('ul');
   const drawNotes = () => notesEl.replaceChildren(...data.notes.map((note, i) => h('li', { className: note.done ? 'done' : '' },
-    `${note.shot ? `Shot ${note.shot}` : 'Episode'} @ ${note.at}s: ${note.text}`,
+    `${note.clip ? `Clip ${note.clip}` : 'Episode'} @ ${note.at}s: ${note.text}`,
     note.answer ? h('em', { textContent: ` → ${note.answer}` }) : null,
     h('button', { textContent: 'Delete', onclick: () => { data.notes.splice(i, 1); drawNotes(); save(); } }))));
   drawNotes();
 
   // A text box plus a button that pins the note to the video's current second.
-  const noteInput = (video, shot) => {
+  const noteInput = (video, clip) => {
     const input = h('input', { placeholder: 'What is wrong here?' });
     const add = () => {
       if (!input.value) return;
-      data.notes.push({ shot, at: +video.currentTime.toFixed(1), text: input.value, done: false });
+      data.notes.push({ clip, at: +video.currentTime.toFixed(1), text: input.value, done: false });
       input.value = '';
       drawNotes();
       save();
@@ -82,23 +82,23 @@ async function editEpisode(show, name) {
   );
 }
 
-// One shot: its video, where to cut its start and end, and notes on it.
+// One clip: its video, where to cut its start and end, and notes on it.
 function clipEditor(file, data, save, noteInput) {
-  const shot = file.match(/(\w+)\.mp4$/)[1];
+  const clip = file.match(/(\w+)\.mp4$/)[1];
   const video = h('video', { src: `/files/${file}`, controls: true, playsInline: true, preload: 'metadata' });
-  const trim = data.trims[shot] || {};
+  const trim = data.trims[clip] || {};
   const start = h('input', { type: 'number', step: 0.1, placeholder: 'start', value: trim.start ?? '' });
   const end = h('input', { type: 'number', step: 0.1, placeholder: 'end', value: trim.end ?? '' });
   const setTrim = () => {
-    data.trims[shot] = { start: start.value === '' ? undefined : +start.value, end: end.value === '' ? undefined : +end.value };
+    data.trims[clip] = { start: start.value === '' ? undefined : +start.value, end: end.value === '' ? undefined : +end.value };
     save();
   };
   start.onchange = end.onchange = setTrim;
   const here = input => () => { input.value = video.currentTime.toFixed(1); setTrim(); };
 
   return h('div', { className: 'clip' },
-    h('h3', { textContent: `Shot ${shot}` }),
+    h('h3', { textContent: `Clip ${clip}` }),
     video,
     h('div', { className: 'row' }, start, h('button', { textContent: 'Start here', onclick: here(start) }), end, h('button', { textContent: 'End here', onclick: here(end) })),
-    noteInput(video, shot));
+    noteInput(video, clip));
 }
