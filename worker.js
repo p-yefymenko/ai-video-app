@@ -37,7 +37,9 @@ export default {
         return new Response('OK');
       }
       if (req.method === 'DELETE') {
-        await env.BUCKET.delete(key);
+        // A key ending in "/" deletes the whole folder.
+        const keys = key.endsWith('/') ? (await env.BUCKET.list({ prefix: key })).objects.map(o => o.key) : [key];
+        await env.BUCKET.delete(keys);
         return new Response('OK');
       }
     }

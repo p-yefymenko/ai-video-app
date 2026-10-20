@@ -15,9 +15,17 @@ async function home() {
   const shows = await loadShows();
   root.replaceChildren(newShowForm(), ...shows.map(show => h('section', { className: 'panel' },
     h('h2', { textContent: show.title || show.id }),
-    h('button', { textContent: 'Next episode', onclick: () => tellBot(`Next episode: ${show.id}`) }),
+    h('div', { className: 'row' },
+      h('button', { textContent: 'Next episode', onclick: () => tellBot(`Next episode: ${show.id}`) }),
+      h('button', { textContent: 'Delete show', onclick: () => deleteShow(show) })),
     h('ul', {}, show.episodes.map(ep => h('li', {},
       h('a', { href: '#', textContent: `${ep.name} · ${ep.title || ''} · ${ep.status}`, onclick: e => { e.preventDefault(); editEpisode(show, ep.name); } })))))));
+}
+
+async function deleteShow(show) {
+  if (!confirm(`Delete "${show.title || show.id}" and all its episodes from the app?`)) return;
+  await fetch(`/files/shows/${show.id}/`, { method: 'DELETE', headers: auth });
+  home();
 }
 
 function newShowForm() {
