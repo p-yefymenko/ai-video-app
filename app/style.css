@@ -1,0 +1,29 @@
+* { box-sizing: border-box; }
+body { margin: 0; background: #000; color: #eee; font: 16px system-ui, sans-serif; }
+button { font: inherit; padding: 8px 12px; border: 0; border-radius: 8px; background: #333; color: #eee; cursor: pointer; }
+
+/* Viewer: show grid */
+.shows { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; padding: 16px; }
+.card { padding: 0; background: none; text-align: left; }
+.card img { width: 100%; aspect-ratio: 9 / 16; object-fit: cover; border-radius: 8px; background: #222; }
+.card span { display: block; padding: 6px 2px; }
+
+/* Viewer: swipe feed */
+.feed { position: fixed; inset: 0; overflow-y: scroll; scroll-snap-type: y mandatory; background: #000; }
+.feed section { position: relative; height: 100dvh; scroll-snap-align: start; }
+.feed video { width: 100%; height: 100%; object-fit: contain; }
+.feed .label { position: absolute; left: 16px; bottom: 24px; margin: 0; text-shadow: 0 1px 4px #000; }
+.feed .close { position: fixed; top: 16px; left: 16px; z-index: 1; font-size: 24px; background: #0008; }
+
+/* Admin */
+.admin main { max-width: 640px; margin: auto; padding: 16px; }
+.panel, .clip { margin: 16px 0; padding: 16px; border-radius: 12px; background: #161616; }
+.admin video { width: 100%; max-height: 70vh; background: #000; }
+.admin textarea { width: 100%; min-height: 100px; }
+.admin input, .admin textarea { font: inherit; padding: 8px; border-radius: 8px; border: 1px solid #444; background: #000; color: #eee; }
+.row { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0; }
+.row input:not([type=number]) { flex: 1; }
+.row input[type=number] { width: 90px; }
+li { margin: 6px 0; }
+li.done { opacity: 0.5; }
+a { color: #8cf; }

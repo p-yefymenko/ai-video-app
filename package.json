@@ -1,0 +1,17 @@
+{
+  "name": "ai-video-app",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "login": "wrangler login",
+    "setup": "wrangler r2 bucket create ai-video-app",
+    "set-key": "wrangler secret put ADMIN_KEY",
+    "set-bot-url": "wrangler secret put BOT_WEBHOOK_URL",
+    "set-bot-key": "wrangler secret put BOT_WEBHOOK_KEY",
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy"
+  },
+  "devDependencies": {
+    "wrangler": "^4.151.3"
+  }
+}
