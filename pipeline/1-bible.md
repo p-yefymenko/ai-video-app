@@ -15,6 +15,6 @@ Pick a short kebab-case id and write `/workspace/shows/<id>/show.md`:
 - **Places:** for each, a kebab-case id and a description.
 - **Episodes:** the whole story as one-minute episodes, one line each, as many as it needs. Without a script, plan 10. Every episode ends on a hook that makes people want the next one.
 
-If the script has a picture of a character or place, save it as `refs/<id>.png`.
+Pictures in the script show how something should look: a face, an outfit, a mark on the skin, a prop. Use them when writing the descriptions. Save one as `refs/<id>.png` (and add it to `show.md` with that id) only if it shows exactly what should appear on screen. A photo of a dress worn by a stranger would put the stranger's face in the video.
 
 Upload `{"title": "...", "description": "<logline>"}` to the app as `shows/<id>/show.json`.

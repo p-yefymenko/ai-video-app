@@ -15,6 +15,6 @@ Length: 10
 Lyra kneels at the dry village well, ash drifting past. Cut to her cracked hands letting dust run through her fingers. Distant thunder. Lyra, whispering: "One more week and there will be nothing left."
 ```
 
-`Refs` lists the characters and places that appear, if any. The text is everything the viewer sees and hears; it becomes the clip's prompt.
+`Refs` lists the characters, places and things from `show.md` that appear, if any. The text is everything the viewer sees and hears; it becomes the clip's prompt.
 
 If the episode needs a new character or place, add it to `show.md` first.
