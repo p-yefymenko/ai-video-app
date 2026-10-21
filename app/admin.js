@@ -23,6 +23,7 @@ async function home() {
   const shows = await loadShows();
   root.replaceChildren(newShowForm(), ...shows.map(show => h('section', { className: 'panel' },
     h('h2', { textContent: show.title || show.id }),
+    h('p', { textContent: `id: ${show.id}` }),
     h('div', { className: 'row' },
       h('button', { textContent: 'Next episode', onclick: () => tellBot(`Next episode: ${show.id}`) }),
       h('button', { textContent: 'Delete show', onclick: () => deleteShow(show) })),
