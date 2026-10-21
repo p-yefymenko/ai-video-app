@@ -11,6 +11,6 @@ Upload to the app:
 - every clip as `shows/<id>/epNN/<clip>.mp4`
 - `epNN.mp4` as `shows/<id>/epNN.mp4`
 - if the show has no `shows/<id>/cover.jpg` yet: a striking vertical frame from this episode
-- if `epNN.json` didn't exist: `{"title": "<episode title>", "status": "draft", "trims": {}, "notes": []}` as `shows/<id>/epNN.json`
+- `shows/<id>/epNN.json`: start from the app's copy, or from `{"title": "<episode title>", "status": "draft", "trims": {}, "notes": []}` if there is none. Add each problem written down in step 4 as a note: `{"clip": "03", "at": <second>, "text": "Bot: <problem>", "done": false}`.
 
 The episode is now a draft in the app's admin page. The owner publishes it.

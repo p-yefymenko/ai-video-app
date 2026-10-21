@@ -39,8 +39,10 @@ async function deleteShow(show) {
 function newShowForm() {
   const text = h('textarea', { placeholder: 'Describe the show, or attach the script' });
   const file = h('input', { type: 'file' });
+  const episodes = h('input', { type: 'number', min: 1, placeholder: 'Episodes' });
   const create = async () => {
     let task = `New show: ${text.value}`;
+    if (episodes.value) task += `\nEpisodes: ${episodes.value}`;
     const script = file.files[0];
     if (script) {
       const path = `scripts/${Date.now()}-${script.name.replace(/[^\w.-]+/g, '-')}`;
@@ -49,7 +51,8 @@ function newShowForm() {
     }
     tellBot(task);
   };
-  return h('section', { className: 'panel' }, h('h2', { textContent: 'New show' }), text, file, h('button', { textContent: 'Create', onclick: create }));
+  return h('section', { className: 'panel' }, h('h2', { textContent: 'New show' }), text,
+    h('div', { className: 'row' }, file, episodes, h('button', { textContent: 'Create', onclick: create })));
 }
 
 async function editEpisode(show, name) {

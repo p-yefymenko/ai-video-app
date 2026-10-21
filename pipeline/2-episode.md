@@ -4,7 +4,7 @@ Skip if `epNN/clips.md` exists.
 
 Read `show.md` and every earlier `epNN/clips.md`. If the Episodes list has no line for the current episode, add one that continues the story in the same style.
 
-Direct the current episode the way a great micro-drama director would: about one minute, hooking the viewer in the first seconds and ending on a cliffhanger. Use whatever film language serves the story.
+Direct the current episode the way a great micro-drama director would: 2–3 minutes for episode 1, about one minute for the rest, hooking the viewer in the first seconds and ending on a cliffhanger. Use whatever film language serves the story.
 
 Write it as `epNN/clips.md`, a list of clips. A clip is one video generation of up to 15 seconds and may contain cuts. For example:
 
