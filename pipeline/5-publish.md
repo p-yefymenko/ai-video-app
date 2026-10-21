@@ -8,7 +8,7 @@ With ffmpeg, cut each clip by its trims and join them in order into `epNN.mp4`. 
 
 Upload to the app:
 
-- every clip as `shows/<id>/epNN/<clip>.mp4`, and `epNN/clips.md` and `epNN/prompts.md` next to them
+- delete the app's `shows/<id>/epNN/` folder first, so no old clips are left; then every clip as `shows/<id>/epNN/<clip>.mp4`, and `epNN/clips.md` and `epNN/prompts.md` next to them
 - `show.md` and every reference image as `shows/<id>/show.md` and `shows/<id>/refs/<id>.png`, so the owner can see what the clips were made from
 - `epNN.mp4` as `shows/<id>/epNN.mp4`
 - if the show has no `shows/<id>/cover.jpg` yet: a striking vertical frame from this episode

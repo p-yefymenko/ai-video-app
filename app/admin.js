@@ -62,6 +62,13 @@ async function editEpisode(show, name) {
   const clips = (await list(`${base}/`)).files.filter(f => f.endsWith('.mp4')).sort();
   const save = () => put(`${base}.json`, JSON.stringify(data, null, 2));
 
+  // The bot's clips.md has a "## 01" section per clip; show each section's text with its clip.
+  const script = await fetch(`/files/${base}/clips.md`).then(r => (r.ok ? r.text() : ''));
+  const descriptions = Object.fromEntries(script.split(/^## /m).slice(1).map(section => {
+    const [id, ...lines] = section.trim().split('\n');
+    return [id.trim(), lines.filter(line => !/^(Refs|Length):/.test(line)).join('\n').trim()];
+  }));
+
   // Every video gets its own notes list. Notes without a clip belong to the whole episode.
   const lists = [];
   const drawNotes = () => lists.forEach(([ul, clip]) => ul.replaceChildren(...data.notes
@@ -102,14 +109,15 @@ async function editEpisode(show, name) {
     episodeVideo,
     notes(episodeVideo),
     h('h3', { textContent: 'Clips' }),
-    ...clips.map(file => clipEditor(file, data, save, notes)),
+    ...clips.map(file => clipEditor(file, data, save, notes, descriptions)),
   );
   drawNotes();
 }
 
 // One clip: its video, where to cut its start and end, and notes on it.
-function clipEditor(file, data, save, notes) {
+function clipEditor(file, data, save, notes, descriptions) {
   const clip = file.match(/(\w+)\.mp4$/)[1];
+  const description = descriptions[clip];
   const video = h('video', { src: `/files/${file}`, controls: true, playsInline: true, preload: 'metadata' });
   const trim = data.trims[clip] || {};
   const start = h('input', { type: 'number', step: 0.1, placeholder: 'start', value: trim.start ?? '' });
@@ -123,6 +131,7 @@ function clipEditor(file, data, save, notes) {
 
   return h('div', { className: 'clip' },
     h('h3', { textContent: `Clip ${clip}` }),
+    description ? h('details', {}, h('summary', { textContent: `${description.slice(0, 90)}…` }), h('p', { textContent: description })) : null,
     video,
     h('div', { className: 'row' }, start, h('button', { textContent: 'Start here', onclick: here(start) }), end, h('button', { textContent: 'End here', onclick: here(end) })),
     notes(video, clip));

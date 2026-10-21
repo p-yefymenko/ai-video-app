@@ -20,6 +20,7 @@ Its address is in `$APP_URL` and its key in `$APP_KEY`; the owner gave you both 
 
 - Read a file: `curl "$APP_URL/files/<path>"`
 - Upload a file: `curl -X PUT -H "Authorization: Bearer $APP_KEY" --data-binary @<file> "$APP_URL/files/<path>"`
+- Delete a file, or a whole folder if the path ends in `/`: `curl -X DELETE -H "Authorization: Bearer $APP_KEY" "$APP_URL/files/<path>"`
 
 Creating, replacing and deleting files under `/workspace/shows/` and uploading to the app is your normal work: do it without asking.
 
