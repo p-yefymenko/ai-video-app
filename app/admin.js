@@ -62,16 +62,21 @@ async function editEpisode(show, name) {
   const clips = (await list(`${base}/`)).files.filter(f => f.endsWith('.mp4')).sort();
   const save = () => put(`${base}.json`, JSON.stringify(data, null, 2));
 
-  const notesEl = h('ul');
-  const drawNotes = () => notesEl.replaceChildren(...data.notes.map((note, i) => h('li', { className: note.done ? 'done' : '' },
-    `${note.clip ? `Clip ${note.clip}` : 'Episode'} @ ${note.at}s: ${note.text}`,
-    note.answer ? h('em', { textContent: ` → ${note.answer}` }) : null,
-    h('button', { textContent: 'Delete', onclick: () => { data.notes.splice(i, 1); drawNotes(); save(); } }))));
-  drawNotes();
+  // Every video gets its own notes list. Notes without a clip belong to the whole episode.
+  const lists = [];
+  const drawNotes = () => lists.forEach(([ul, clip]) => ul.replaceChildren(...data.notes
+    .map((note, i) => [note, i])
+    .filter(([note]) => note.clip === clip)
+    .map(([note, i]) => h('li', { className: note.done ? 'done' : '' },
+      `@ ${note.at}s: ${note.text}`,
+      note.answer ? h('em', { textContent: ` → ${note.answer}` }) : null,
+      h('button', { textContent: 'Delete', onclick: () => { data.notes.splice(i, 1); drawNotes(); save(); } })))));
 
-  // A text box plus a button that pins the note to the video's current second.
-  const noteInput = (video, clip) => {
+  // A text box that pins a note to the video's current second, with the video's notes below it.
+  const notes = (video, clip) => {
     const input = h('input', { placeholder: 'What is wrong here?' });
+    const ul = h('ul');
+    lists.push([ul, clip]);
     const add = () => {
       if (!input.value) return;
       data.notes.push({ clip, at: +video.currentTime.toFixed(1), text: input.value, done: false });
@@ -79,7 +84,7 @@ async function editEpisode(show, name) {
       drawNotes();
       save();
     };
-    return h('div', { className: 'row' }, input, h('button', { textContent: 'Note here', onclick: add }));
+    return h('div', {}, h('div', { className: 'row' }, input, h('button', { textContent: 'Note here', onclick: add })), ul);
   };
 
   const episodeVideo = h('video', { src: `/files/${base}.mp4`, controls: true, playsInline: true });
@@ -95,15 +100,15 @@ async function editEpisode(show, name) {
     h('h2', { textContent: `${show.title} · ${name} · ${data.title || ''}` }),
     h('div', { className: 'row' }, publish, h('button', { textContent: 'Send notes and cuts to the bot', onclick: () => tellBot(`Fix: ${show.id} ${name}`) })),
     episodeVideo,
-    noteInput(episodeVideo),
-    h('h3', { textContent: 'Notes' }), notesEl,
+    notes(episodeVideo),
     h('h3', { textContent: 'Clips' }),
-    ...clips.map(file => clipEditor(file, data, save, noteInput)),
+    ...clips.map(file => clipEditor(file, data, save, notes)),
   );
+  drawNotes();
 }
 
 // One clip: its video, where to cut its start and end, and notes on it.
-function clipEditor(file, data, save, noteInput) {
+function clipEditor(file, data, save, notes) {
   const clip = file.match(/(\w+)\.mp4$/)[1];
   const video = h('video', { src: `/files/${file}`, controls: true, playsInline: true, preload: 'metadata' });
   const trim = data.trims[clip] || {};
@@ -120,5 +125,5 @@ function clipEditor(file, data, save, noteInput) {
     h('h3', { textContent: `Clip ${clip}` }),
     video,
     h('div', { className: 'row' }, start, h('button', { textContent: 'Start here', onclick: here(start) }), end, h('button', { textContent: 'End here', onclick: here(end) })),
-    noteInput(video, clip));
+    notes(video, clip));
 }
