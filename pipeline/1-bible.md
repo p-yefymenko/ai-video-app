@@ -7,7 +7,7 @@ The input is the owner's description and, if there is a `Script:` URL, the scrip
 Pick a short kebab-case id and write `/workspace/shows/<id>/show.md`:
 
 - **Title** and a one-line logline.
-- **Style:** one line describing the look of every shot (e.g. "photorealistic, cinematic, warm night lighting").
+- **Style:** one line describing the look of the whole show (e.g. "photorealistic, cinematic, shallow depth of field"). It goes into every clip, so it must not mention any place or its lighting; those belong in the place's description.
 - **Language** of the dialogue. English unless the input says otherwise.
 - **Characters:** for each, a kebab-case id, name, age, role in the story, and:
   - **Look:** face, hair, clothes, written so it can be used as an image prompt.
