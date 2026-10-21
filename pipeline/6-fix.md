@@ -6,7 +6,7 @@ Download `shows/<id>/epNN.json` from the app. Every note with `"done": false` is
 
 For each open note, do what it asks:
 
-- **The clip is broken or wrong:** delete `epNN/<clip>.mp4` so it gets made again. Change the clip in `epNN/clips.md` first if the note asks for something different.
+- **The clip is broken or wrong:** delete `epNN/<clip>.mp4` so it gets made again, and remove its entry from `trims`, since those seconds belonged to the old version. Change the clip in `epNN/clips.md` first if the note asks for something different.
 - **It should be shorter:** set that clip's start or end in `trims`.
 - **The story or dialogue should change:** edit `epNN/clips.md` and delete the clips it affects.
 
