@@ -1,10 +1,10 @@
 // The backend. Every piece of data is a file in R2:
-//   shows/<id>/show.json, shows/<id>/cover.jpg
+//   shows/<id>/show.json, shows/<id>/cover.jpg, shows/<id>/show.md, shows/<id>/refs/<id>.png
 //   shows/<id>/epNN.json, shows/<id>/epNN.mp4, shows/<id>/epNN/<clip>.mp4
 //   scripts/<file>   show scripts uploaded from the admin page
 // Anyone can read. Writing needs the admin key. /api/bot wakes the Grok Bot.
 
-const TYPES = { mp4: 'video/mp4', json: 'application/json', jpg: 'image/jpeg', png: 'image/png' };
+const TYPES = { mp4: 'video/mp4', json: 'application/json', jpg: 'image/jpeg', png: 'image/png', md: 'text/markdown; charset=utf-8' };
 
 export default {
   async fetch(req, env) {

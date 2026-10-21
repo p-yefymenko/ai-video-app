@@ -6,4 +6,6 @@ For every clip in `epNN/clips.md` that has no `epNN/<clip>.mp4`, generate a vide
 - **Prompt:** the clip's text and the show's Style. Wherever a character speaks, add that character's Voice from `show.md`, word for word. End with: "Nobody looks into the camera."
 - **Format:** vertical 9:16, 720p, the clip's Length, with audio.
 
-Generate each clip once; never remake one on your own. Watch it from start to end, and write down any obvious problem for step 5 (someone looks at or talks to the camera, a body merges into the floor or furniture, a person vanishes or appears out of nowhere). The owner decides what gets remade.
+Write the exact prompt and the reference files you used for each clip into `epNN/prompts.md`.
+
+Generate each clip once; never remake one on your own. Watch it from start to end, and write down any obvious problem for step 5: a body merging into the floor or furniture, a person vanishing or appearing out of nowhere, the wrong place or characters. Don't judge lip sync or where people look; you can't see those reliably. The owner decides what gets remade.

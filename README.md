@@ -37,6 +37,8 @@ shows/<id>/cover.jpg
 shows/<id>/epNN.json      title, status (draft/published), trims, notes
 shows/<id>/epNN.mp4       the episode
 shows/<id>/epNN/<clip>.mp4
+shows/<id>/epNN/clips.md, prompts.md   what the clips were made from, for debugging
+shows/<id>/show.md, refs/<id>.png      the bot's show bible and reference images
 scripts/<file>            scripts uploaded from admin
 ```
 

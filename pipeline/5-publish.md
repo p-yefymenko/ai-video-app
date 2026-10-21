@@ -8,7 +8,8 @@ With ffmpeg, cut each clip by its trims and join them in order into `epNN.mp4`. 
 
 Upload to the app:
 
-- every clip as `shows/<id>/epNN/<clip>.mp4`
+- every clip as `shows/<id>/epNN/<clip>.mp4`, and `epNN/clips.md` and `epNN/prompts.md` next to them
+- `show.md` and every reference image as `shows/<id>/show.md` and `shows/<id>/refs/<id>.png`, so the owner can see what the clips were made from
 - `epNN.mp4` as `shows/<id>/epNN.mp4`
 - if the show has no `shows/<id>/cover.jpg` yet: a striking vertical frame from this episode
 - `shows/<id>/epNN.json`: start from the app's copy, or from `{"title": "<episode title>", "status": "draft", "trims": {}, "notes": []}` if there is none. Add each problem written down in step 4 as a note: `{"clip": "03", "at": <second>, "text": "Bot: <problem>", "done": false}`.
