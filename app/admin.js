@@ -102,10 +102,19 @@ async function editEpisode(show, name) {
     save();
   };
 
+  // Shows what the bot will read from epNN.json (open notes and cuts) and asks before sending.
+  const sendFix = () => {
+    const open = data.notes.filter(n => !n.done).map(n => `• ${n.clip ? `Clip ${n.clip}` : 'Episode'} at ${n.at}s: ${n.text}`);
+    const cuts = Object.entries(data.trims).filter(([, t]) => t.start != null || t.end != null)
+      .map(([clip, t]) => `• Clip ${clip}: keep from ${t.start ?? 0}s to ${t.end != null ? `${t.end}s` : 'the end'}`);
+    const summary = `Notes to fix:\n${open.join('\n') || '• none'}\n\nCuts:\n${cuts.join('\n') || '• none'}\n\nSend to the bot?`;
+    if (confirm(summary)) tellBot(`Fix: ${show.id} ${name}`);
+  };
+
   root.replaceChildren(
     h('button', { textContent: '← Back', onclick: home }),
     h('h2', { textContent: `${show.title} · ${name} · ${data.title || ''}` }),
-    h('div', { className: 'row' }, publish, h('button', { textContent: 'Send notes and cuts to the bot', onclick: () => tellBot(`Fix: ${show.id} ${name}`) })),
+    h('div', { className: 'row' }, publish, h('button', { textContent: 'Send notes and cuts to the bot', onclick: sendFix })),
     episodeVideo,
     notes(episodeVideo),
     h('h3', { textContent: 'Clips' }),
@@ -128,6 +137,15 @@ function clipEditor(file, data, save, notes, descriptions) {
   };
   start.onchange = end.onchange = setTrim;
   const here = input => () => { input.value = video.currentTime.toFixed(1); setTrim(); };
+
+  // Plays only the kept part: starts at the cut start and pauses at the cut end. Dragging past the end still works.
+  let last = 0;
+  video.onloadedmetadata = () => { video.currentTime = +start.value || 0; };
+  video.ontimeupdate = () => {
+    const stop = end.value === '' ? Infinity : +end.value;
+    if (last < stop && video.currentTime >= stop) video.pause();
+    last = video.currentTime;
+  };
 
   return h('div', { className: 'clip' },
     h('h3', { textContent: `Clip ${clip}` }),
