@@ -66,7 +66,7 @@ async function editEpisode(show, name) {
   const script = await fetch(`/files/${base}/clips.md`).then(r => (r.ok ? r.text() : ''));
   const descriptions = Object.fromEntries(script.split(/^## /m).slice(1).map(section => {
     const [id, ...lines] = section.trim().split('\n');
-    return [id.trim(), lines.filter(line => !/^(Refs|Length):/.test(line)).join('\n').trim()];
+    return [id.trim(), lines.filter(line => !/^(Start|Refs|Length):/.test(line)).join('\n').trim()];
   }));
 
   // Every video gets its own notes list. Notes without a clip belong to the whole episode.

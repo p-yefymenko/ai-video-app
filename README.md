@@ -19,13 +19,13 @@ Each step is one file in `pipeline/`. A step skips work whose output already exi
 | Step | File | Output (in `/workspace/shows/<id>/` on the bot's computer) |
 |---|---|---|
 | 1 | `1-bible.md` | `show.md`: characters (look + voice), places, things, style, the list of episodes |
-| 2 | `2-episode.md` | `epNN/clips.md`: the episode, directed as a list of clips (one generation each, up to 15 s, cuts allowed) |
+| 2 | `2-episode.md` | `epNN/clips.md`: the episode, directed as a list of clips (one shot and one generation each, 3–10 s, no cuts inside) |
 | 3 | `3-references.md` | `refs/<id>.png`: one reference image per character, place and thing |
 | 4 | `4-clips.md` | `epNN/<clip>.mp4`: one 9:16 video per clip, made from the reference images. Never remade by the bot; problems it sees become "Bot:" notes |
 | 5 | `5-publish.md` | `epNN.mp4`, cut and joined with ffmpeg, uploaded to the app as a draft |
 | 6 | `6-fix.md` | only for `Fix`: applies the owner's notes and cuts, then reruns steps 4–5 |
 
-**Consistency:** every clip gets the same reference images, with no start frames. Each character's voice is described once in `show.md` and that exact text goes into every clip prompt.
+**Consistency:** every clip gets the same reference images. A clip that picks up exactly where another ended starts from that clip's last frame. Each character's voice is described once in `show.md` and that exact text goes into every clip prompt.
 
 ## The app
 
