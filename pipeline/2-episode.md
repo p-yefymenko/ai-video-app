@@ -12,6 +12,8 @@ The video model remembers nothing: it draws every shot from that shot's words al
 
 - Every shot says where each person in it is and what they are doing, even if an earlier shot already said it ("close-up of Abadon, still on his horse, looking down").
 - Every clip makes sense on its own. If it continues the previous clip, its first shot shows again what is going on.
+- Show every move on screen. If someone ends up somewhere new, the viewer sees them go there and why.
+- Keep the camera on one side of the action within a clip. The model can't turn a scene around: reverse shots and people turning their back come out morphed.
 - Describe only what a camera sees, plainly. "Glowing red scars on the faces of dark figures between the trees", not "streaks of red light".
 
 Write it as `epNN/clips.md`, a list of clips. A clip is one video generation of up to 15 seconds and may contain cuts. For example:
