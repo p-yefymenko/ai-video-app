@@ -149,7 +149,7 @@ function clipEditor(file, data, save, notes, descriptions) {
 
   return h('div', { className: 'clip' },
     h('h3', { textContent: `Clip ${clip}` }),
-    description ? h('details', {}, h('summary', { textContent: `${description.slice(0, 90)}…` }), h('p', { textContent: description })) : null,
+    description ? h('details', {}, h('summary', { textContent: description })) : null,
     video,
     h('div', { className: 'row' }, start, h('button', { textContent: 'Start here', onclick: here(start) }), end, h('button', { textContent: 'End here', onclick: here(end) })),
     notes(video, clip));
