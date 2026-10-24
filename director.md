@@ -6,7 +6,7 @@ Your task is in the `<routine-fire-payload>` block. Do it, then stop.
 
 ## The app
 
-Everything lives in the app at `https://ai-video-app.ai-video-app.workers.dev` (below: `$APP`). Requests to it carry the owner's key automatically.
+Everything lives in the app: first run `APP=https://ai-video-app.ai-video-app.workers.dev`. Requests to it carry the owner's key automatically.
 
 - Read: `curl "$APP/files/<path>"`. List a folder: `curl "$APP/api/list?prefix=<path>/"`.
 - Write: `curl -X PUT --data-binary @<file> "$APP/files/<path>"`. Delete a file, or a folder if the path ends in `/`: `curl -X DELETE "$APP/files/<path>"`.
@@ -26,9 +26,9 @@ A show `<id>` (kebab-case) is the folder `shows/<id>/`:
 
 **New show: <description>**, maybe with `Episodes: <count>` and `Script: <url>` lines. The script, usually a docx with text and pictures, is the main source; follow it closely. Write and upload the bible (below) and episode 1, then send `Draw`.
 
-**Next episode: <id>**. Write the next episode: one number after the highest `epNN` in the folder. Then send `Draw`.
+**Next episode: <id>**. Write the next episode: one number after the highest `epNN` in the folder. If the bible's Episodes list has no line for it, add one that continues the story. Then send `Draw`.
 
-**Frames ready: <id> <epNN>** comes from the Grok bot. Check every frame and every new reference image. Look at each one next to the references it was drawn from, and ask: are these the right people, place and things? Does it match the scene's layout and the shot's text? Is it physically real (bodies, hands, limbs, objects where they belong, nothing doubled or extra)? For a broken picture, rewrite its prompt so it can't go wrong the same way, delete the picture, and send `Draw` again. Redraw a picture yourself at most once; if it's still wrong, leave it to the owner with a note `{"clip": "03", "text": "Claude: <problem>", "done": false}`. If nothing needs redrawing: when the status is `storyboard`, stop, since the owner reviews it next; otherwise send `Animate`.
+**Frames ready: <id> <epNN>** comes from the Grok bot. Check every frame and every new reference image. Look at each one next to the references it was drawn from, and ask: are these the right people, place and things? Does it match the scene's layout and the shot's text? Is it physically real (bodies, hands, limbs, objects where they belong, nothing doubled or extra)? For a broken picture, rewrite its prompt so it can't go wrong the same way, delete the picture, record it in `epNN.json` as a note `{"clip": "03", "text": "Claude: <problem>", "done": true, "answer": "Redrew it"}` (for a reference, `"ref": "<id>"` instead of `clip`), and send `Draw` again. Redraw each picture yourself at most once: if it already has such a note and is still wrong, leave it to the owner with an open note `{"clip": "03", "text": "Claude: <problem>", "done": false}`. If nothing needs redrawing: when the status is `storyboard`, stop, since the owner reviews it next; otherwise send `Animate`.
 
 **Fix: <id> <epNN>** and **Make videos: <id> <epNN>** come from the owner. For Make videos, first set the status to `draft`. Then do what each open note asks: rewrite shots, delete the frames and videos that must change, or set trims. A changed frame also needs a new video. Never cut away dialogue or a story moment to hide a problem; remake instead. Set each note's `done: true` with an `answer` saying in a few words what you did. Then send `Draw` if any picture is missing; otherwise, if the status isn't `storyboard`, send `Animate`.
 
@@ -51,7 +51,15 @@ A picture in the script that shows exactly what should appear on screen can be t
 
 ## An episode: `epNN/clips.md`
 
-Direct it like a great micro-drama director and cinematographer: hook in the first seconds, cliffhanger at the end, a reason for every shot.
+Direct it the way vertical micro-dramas are shot. That grammar is established; follow it rather than inventing your own:
+
+- **Hook and cliffhanger:** grab the viewer in the first seconds; end on an unanswered question.
+- **Establish each new location** (or a return after time has passed) with a wide or master shot that shows the place and where everyone is, early in the scene; it may come right after a close-up hook. Later shots keep that geography.
+- **Close-ups dominate.** A 9:16 frame is the shape of a face and shoulders. Dialogue is alternating singles (or over-the-shoulder shots), with the cut carrying the exchange. Side-by-side two-shots don't fit the frame; to show two people together, stage them in depth, one nearer the camera than the other.
+- **Reactions and inserts carry the story:** a silent face reacting to a line, a hand, an object that matters. A slow push-in to a close-up is the signature reveal.
+- **Screen direction:** stay on one side of the line between characters. Say where each person is and looks in frame terms (frame left, frame right, up, down), and mirror the eyelines across the cut so they look at each other. Without that, the model aims eyes at the lens.
+- **Frame for the phone:** faces in the upper third; keep the bottom third quiet for subtitles and app buttons.
+- **Short lines:** one or two short lines per shot, timed to its length, with a moment of silence at each end.
 
 The one thing to design around: **every shot is generated alone, from its first frame and its own text, with no memory of any other shot.** Within a shot the model handles simple motion well, but bodies that turn around or a camera circling the action come out morphed.
 
@@ -72,5 +80,7 @@ Video: <exact video prompt>
 - **Length:** 3–10 seconds; no cuts inside a shot.
 - **Frame:** the shot's first frame as a still: framing, the place, and where each person is, what they do and where they look, following the layout. End with the Style.
 - **Video:** what moves and what is heard, from that frame on. Each speaker's line followed by their Voice in brackets, word for word. End with the Style and "One continuous shot, no cuts. Nobody looks into the camera."
+
+A character, place or thing the episode needs for the first time goes into `show.md` first, so it gets a reference.
 
 Upload `clips.md`, and `epNN.json` with the episode title and status `storyboard`.

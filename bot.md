@@ -26,6 +26,6 @@ A show `<id>` is the app folder `shows/<id>/`: `show.md` (characters, places and
 2. Download every clip and `epNN.json`. With ffmpeg, cut each clip by its `trims` (seconds; a missing start or end means no cut) and join them in order into `epNN.mp4`, re-encoded as H.264 and AAC. Upload it as `shows/<id>/epNN.mp4`.
 3. If the show has no `cover.jpg` yet, upload a striking frame from the episode as `shows/<id>/cover.jpg`.
 
-When a prompt uses reference images, start it with which image is who, such as "Elizabeth is <IMAGE_1>; the hut is <IMAGE_2>." Generate each picture and video once; never remake one on your own. If the image tool can't save to disk, make a 1-second video with the image as its start frame and save that video's first frame.
+When a prompt uses reference images, start it with which image is who, in your tool's own image labels (for a video the start image comes first), such as "Elizabeth is <IMAGE_1>; the hut is <IMAGE_2>." Generate each picture and video once; never remake one on your own. If the image tool can't save to disk, make a 1-second video with the image as its start frame and save that video's first frame.
 
 Do all of this without asking. When you finish, reply with a one-line summary. If something fails, stop and say what and why.
