@@ -59,14 +59,17 @@ function newShowForm() {
 async function editEpisode(show, name) {
   const base = `shows/${show.id}/${name}`;
   const data = { trims: {}, notes: [], ...(await getJson(`${base}.json`)) };
-  const clips = (await list(`${base}/`)).files.filter(f => f.endsWith('.mp4')).sort();
+  const storyboard = data.status === 'storyboard';
+  // Each clip has a first frame (01.png) and, once videos are made, a video (01.mp4).
+  const files = (await list(`${base}/`)).files.map(f => f.split('/').pop());
+  const clips = [...new Set(files.filter(f => /\.(png|mp4)$/.test(f)).map(f => f.split('.')[0]))].sort();
   const save = () => put(`${base}.json`, JSON.stringify(data, null, 2));
 
-  // The bot's clips.md has a "## 01" section per clip; show each section's text with its clip.
+  // The bot's clips.md has a "## 01" section per clip; show each section's Frame and Action with its clip.
   const script = await fetch(`/files/${base}/clips.md`).then(r => (r.ok ? r.text() : ''));
   const descriptions = Object.fromEntries(script.split(/^## /m).slice(1).map(section => {
     const [id, ...lines] = section.trim().split('\n');
-    return [id.trim(), lines.filter(line => !/^(Start|Refs|Length):/.test(line)).join('\n').trim()];
+    return [id.trim(), lines.filter(line => !/^(#|Refs:|Length:|Layout:)/.test(line)).join('\n').trim()];
   }));
 
   // Every video gets its own notes list. Notes without a clip belong to the whole episode.
@@ -75,18 +78,18 @@ async function editEpisode(show, name) {
     .map((note, i) => [note, i])
     .filter(([note]) => note.clip === clip)
     .map(([note, i]) => h('li', { className: note.done ? 'done' : '' },
-      `@ ${note.at}s: ${note.text}`,
+      label(note),
       note.answer ? h('em', { textContent: ` → ${note.answer}` }) : null,
       h('button', { textContent: 'Delete', onclick: () => { data.notes.splice(i, 1); drawNotes(); save(); } })))));
 
-  // A text box that pins a note to the video's current second, with the video's notes below it.
-  const notes = (video, clip) => {
+  // A text box that pins a note to the video's current second (or just to the frame), with its notes below it.
+  const notes = (media, clip) => {
     const input = h('input', { placeholder: 'What is wrong here?' });
     const ul = h('ul');
     lists.push([ul, clip]);
     const add = () => {
       if (!input.value) return;
-      data.notes.push({ clip, at: +video.currentTime.toFixed(1), text: input.value, done: false });
+      data.notes.push({ clip, at: media.currentTime === undefined ? undefined : +media.currentTime.toFixed(1), text: input.value, done: false });
       input.value = '';
       drawNotes();
       save();
@@ -103,31 +106,39 @@ async function editEpisode(show, name) {
   };
 
   // Shows what the bot will read from epNN.json (open notes and cuts) and asks before sending.
-  const sendFix = () => {
-    const open = data.notes.filter(n => !n.done).map(n => `• ${n.clip ? `Clip ${n.clip}` : 'Episode'} at ${n.at}s: ${n.text}`);
+  const ask = (task, question) => () => {
+    const open = data.notes.filter(n => !n.done).map(n => `• ${n.clip ? `Clip ${n.clip}` : 'Episode'}: ${label(n)}`);
     const cuts = Object.entries(data.trims).filter(([, t]) => t.start != null || t.end != null)
       .map(([clip, t]) => `• Clip ${clip}: keep from ${t.start ?? 0}s to ${t.end != null ? `${t.end}s` : 'the end'}`);
-    const summary = `Notes to fix:\n${open.join('\n') || '• none'}\n\nCuts:\n${cuts.join('\n') || '• none'}\n\nSend to the bot?`;
-    if (confirm(summary)) tellBot(`Fix: ${show.id} ${name}`);
+    const summary = `Notes to fix:\n${open.join('\n') || '• none'}\n\nCuts:\n${cuts.join('\n') || '• none'}\n\n${question}`;
+    if (confirm(summary)) tellBot(`${task}: ${show.id} ${name}`);
   };
 
+  // Storyboard: notes on the frames, then Make videos. Afterwards: the episode, cuts and Publish.
   root.replaceChildren(
     h('button', { textContent: '← Back', onclick: home }),
     h('h2', { textContent: `${show.title} · ${name} · ${data.title || ''}` }),
-    h('div', { className: 'row' }, publish, h('button', { textContent: 'Send notes and cuts to the bot', onclick: sendFix })),
-    episodeVideo,
-    notes(episodeVideo),
-    h('h3', { textContent: 'Clips' }),
-    ...clips.map(file => clipEditor(file, data, save, notes, descriptions)),
+    storyboard
+      ? h('div', { className: 'row' },
+        h('button', { textContent: 'Send notes', onclick: ask('Fix', 'Send to the bot to redraw?') }),
+        h('button', { textContent: 'Make videos', onclick: ask('Make videos', 'Make the videos from these frames?') }))
+      : h('div', { className: 'row' }, publish, h('button', { textContent: 'Send notes and cuts', onclick: ask('Fix', 'Send to the bot?') })),
+    ...(storyboard ? [notes({})] : [episodeVideo, notes(episodeVideo)]),
+    h('h3', { textContent: storyboard ? 'Frames' : 'Clips' }),
+    ...clips.map(clip => clipEditor(`/files/${base}/${clip}`, clip, files.includes(`${clip}.mp4`), data, save, notes, descriptions)),
   );
   drawNotes();
 }
 
-// One clip: its video, where to cut its start and end, and notes on it.
-function clipEditor(file, data, save, notes, descriptions) {
-  const clip = file.match(/(\w+)\.mp4$/)[1];
+const label = note => `${note.at != null ? `@ ${note.at}s: ` : ''}${note.text}`;
+
+// One clip: its frame, or its video with where to cut its start and end, and notes on it.
+function clipEditor(path, clip, hasVideo, data, save, notes, descriptions) {
   const description = descriptions[clip];
-  const video = h('video', { src: `/files/${file}`, controls: true, playsInline: true, preload: 'metadata' });
+  const summary = description ? h('details', {}, h('summary', { textContent: description })) : null;
+  if (!hasVideo) return h('div', { className: 'clip' }, h('h3', { textContent: `Clip ${clip}` }), summary, h('img', { src: `${path}.png` }), notes({}, clip));
+
+  const video = h('video', { src: `${path}.mp4`, controls: true, playsInline: true, preload: 'metadata' });
   const trim = data.trims[clip] || {};
   const start = h('input', { type: 'number', step: 0.1, placeholder: 'start', value: trim.start ?? '' });
   const end = h('input', { type: 'number', step: 0.1, placeholder: 'end', value: trim.end ?? '' });
@@ -149,7 +160,7 @@ function clipEditor(file, data, save, notes, descriptions) {
 
   return h('div', { className: 'clip' },
     h('h3', { textContent: `Clip ${clip}` }),
-    description ? h('details', {}, h('summary', { textContent: description })) : null,
+    summary,
     video,
     h('div', { className: 'row' }, start, h('button', { textContent: 'Start here', onclick: here(start) }), end, h('button', { textContent: 'End here', onclick: here(end) })),
     notes(video, clip));

@@ -6,11 +6,12 @@ A vertical micro-drama app (like ReelShort) whose shows are made by AI. Hand it 
 
 ## How it works
 
-1. **New show:** in the admin page, attach the script (or type a description), optionally set how many episodes, and press Create. The bot plans the whole story as episodes (the first 2–3 minutes, the rest about one) and makes episode 1.
-2. **Review:** the episode appears in admin as a draft. Leave notes pinned to a second of the episode or of a clip, or set where a clip should start and end. Then press **Send notes and cuts to the bot**: it fixes them and uploads a new draft.
-3. **Publish**, then **Next episode**. When the script runs out, the bot continues the story itself.
+1. **New show:** in the admin page, attach the script (or type a description), optionally set how many episodes, and press Create. The bot plans the whole story as episodes (the first 2–3 minutes, the rest about one) and draws episode 1 as a storyboard: one still frame per shot.
+2. **Storyboard:** leave notes on the frames and press **Send notes** to have them redrawn. When they look right, press **Make videos**: the bot animates each frame into a clip.
+3. **Review:** the episode appears in admin as a draft. Leave notes pinned to a second of the episode or of a clip, or set where a clip should start and end. Then press **Send notes and cuts**: the bot fixes them and uploads a new draft.
+4. **Publish**, then **Next episode**. When the script runs out, the bot continues the story itself.
 
-The admin page wakes the bot through a webhook routine. You can also message the bot in chat: `New show: …`, `Next episode: <id>`, `Fix: <id> <epNN>`.
+The admin page wakes the bot through a webhook routine. You can also message the bot in chat: `New show: …`, `Next episode: <id>`, `Fix: <id> <epNN>`, `Make videos: <id> <epNN>`.
 
 ## Pipeline (the bot's steps)
 
@@ -19,13 +20,14 @@ Each step is one file in `pipeline/`. A step skips work whose output already exi
 | Step | File | Output (in `/workspace/shows/<id>/` on the bot's computer) |
 |---|---|---|
 | 1 | `1-bible.md` | `show.md`: characters (look + voice), places, things, style, the list of episodes |
-| 2 | `2-episode.md` | `epNN/clips.md`: the episode, directed as a list of clips (one shot and one generation each, 3–10 s, no cuts inside) |
+| 2 | `2-episode.md` | `epNN/clips.md`: the episode as scenes (where everything is) and shots (first frame + action, 3–10 s, no cuts inside) |
 | 3 | `3-references.md` | `refs/<id>.png`: one reference image per character, place and thing |
-| 4 | `4-clips.md` | `epNN/<clip>.mp4`: one 9:16 video per clip, made from the reference images. Never remade by the bot; problems it sees become "Bot:" notes |
-| 5 | `5-publish.md` | `epNN.mp4`, cut and joined with ffmpeg, uploaded to the app as a draft |
-| 6 | `6-fix.md` | only for `Fix`: applies the owner's notes and cuts, then reruns steps 4–5 |
+| 4 | `4-frames.md` | `epNN/<clip>.png`: each shot's first frame, drawn from the references; uploaded as a storyboard, then the bot stops |
+| 5 | `5-clips.md` | `epNN/<clip>.mp4`: each frame animated into a 9:16 video |
+| 6 | `6-publish.md` | `epNN.mp4`, cut and joined with ffmpeg, uploaded to the app as a draft |
+| 7 | `7-fix.md` | for `Fix` and `Make videos`: applies the owner's notes and cuts, then reruns step 4 (and 5–6 once there are videos) |
 
-**Consistency:** every clip gets the same reference images. A clip that picks up exactly where another ended starts from that clip's last frame. Each character's voice is described once in `show.md` and that exact text goes into every clip prompt.
+**Consistency:** every frame is drawn from the same reference images and follows its scene's layout; every video starts from its frame. Nothing is remade without the owner asking. Each character's voice is described once in `show.md` and that exact text goes into every clip prompt.
 
 ## The app
 
@@ -34,9 +36,9 @@ All data is files in one R2 bucket. `worker.js` serves them (anyone can read; wr
 ```
 shows/<id>/show.json      title, description
 shows/<id>/cover.jpg
-shows/<id>/epNN.json      title, status (draft/published), trims, notes
+shows/<id>/epNN.json      title, status (storyboard/draft/published), trims, notes
 shows/<id>/epNN.mp4       the episode
-shows/<id>/epNN/<clip>.mp4
+shows/<id>/epNN/<clip>.png, <clip>.mp4   each shot's first frame and video
 shows/<id>/epNN/clips.md, prompts.md   what the clips were made from, for debugging
 shows/<id>/show.md, refs/<id>.png      the bot's show bible and reference images
 scripts/<file>            scripts uploaded from admin

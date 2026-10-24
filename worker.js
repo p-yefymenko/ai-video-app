@@ -1,6 +1,6 @@
 // The backend. Every piece of data is a file in R2:
 //   shows/<id>/show.json, shows/<id>/cover.jpg, shows/<id>/show.md, shows/<id>/refs/<id>.png
-//   shows/<id>/epNN.json, shows/<id>/epNN.mp4, shows/<id>/epNN/<clip>.mp4
+//   shows/<id>/epNN.json, shows/<id>/epNN.mp4, shows/<id>/epNN/<clip>.png, shows/<id>/epNN/<clip>.mp4
 //   scripts/<file>   show scripts uploaded from the admin page
 // Anyone can read. Writing needs the admin key. /api/bot wakes the Grok Bot.
 
@@ -39,7 +39,7 @@ export default {
       if (req.method === 'DELETE') {
         // A key ending in "/" deletes the whole folder.
         const keys = key.endsWith('/') ? (await env.BUCKET.list({ prefix: key })).objects.map(o => o.key) : [key];
-        await env.BUCKET.delete(keys);
+        if (keys.length) await env.BUCKET.delete(keys);
         return new Response('OK');
       }
     }

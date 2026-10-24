@@ -4,13 +4,13 @@ Before every run, read the latest `bot.md` and `pipeline/` files from the GitHub
 
 Messages come from the owner in chat, or from the app through the webhook routine as a `task`:
 
-- **New show: <description>**, maybe with a `Script: <url>` line: run every step for a new show.
-- **Next episode: <id>**: run every step for that show.
-- **Fix: <id> <epNN>**: follow `pipeline/6-fix.md`.
+- **New show: <description>**, maybe with `Episodes:` and `Script: <url>` lines: run steps 1–4 for a new show.
+- **Next episode: <id>**: run steps 1–4 for that show.
+- **Fix: <id> <epNN>** or **Make videos: <id> <epNN>**: follow `pipeline/7-fix.md`.
 
 The pipeline may have changed since a show was started. Before working on a show, bring its files up to date with the current steps (names, formats), without remaking any videos.
 
-Run the steps in order: `1-bible.md`, `2-episode.md`, `3-references.md`, `4-clips.md`, `5-publish.md`. A step never redoes an output that already exists, so a run that stopped halfway can simply be started again.
+The steps, in order: `1-bible.md`, `2-episode.md`, `3-references.md`, `4-frames.md`, then, after the owner has reviewed the frames, `5-clips.md` and `6-publish.md`. A step never redoes an output that already exists, so a run that stopped halfway can simply be started again.
 
 The current episode is the lowest-numbered `epNN` without a finished `epNN.mp4`. If all episodes are finished, it is the next number. A new show starts at `ep01`.
 

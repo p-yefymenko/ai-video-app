@@ -12,7 +12,7 @@ Pick a short kebab-case id and write `/workspace/shows/<id>/show.md`:
 - **Characters:** for each, a kebab-case id, name, age, role in the story, and:
   - **Look:** face, hair, clothes, written so it can be used as an image prompt.
   - **Voice:** one line (e.g. "soft, low, calm female voice, speaks slowly"). This exact text is used in every clip.
-- **Places:** for each, a kebab-case id and a description.
+- **Places:** for each, a kebab-case id and a description of only what never moves (walls, floor, windows, fixed furniture). Things the story moves, like a pot or a lantern, belong in each scene's layout. A place seen from inside and from outside is two places (`healer-hut`, `healer-hut-inside`).
 - **Things:** recurring animals, creatures or props that don't look ordinary (a skeletal horse, a cursed sword), each with a kebab-case id and a description. Without a reference image the video model draws them differently in every shot.
 - **Episodes:** one line each. If the input gives an `Episodes:` count, plan exactly that many; otherwise as many as the story needs. Spread the story evenly; where the script runs thin, add filler episodes with side stories and quieter moments. Episode 1 runs 2–3 minutes, the rest about one minute. Every episode ends on a hook that makes people want the next one.
 
