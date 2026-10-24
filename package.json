@@ -8,6 +8,8 @@
     "set-key": "wrangler secret put ADMIN_KEY",
     "set-bot-url": "wrangler secret put BOT_WEBHOOK_URL",
     "set-bot-key": "wrangler secret put BOT_WEBHOOK_KEY",
+    "set-director-url": "wrangler secret put DIRECTOR_URL",
+    "set-director-key": "wrangler secret put DIRECTOR_KEY",
     "dev": "wrangler dev",
     "deploy": "wrangler deploy"
   },

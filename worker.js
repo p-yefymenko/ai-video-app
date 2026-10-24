@@ -2,7 +2,8 @@
 //   shows/<id>/show.json, shows/<id>/cover.jpg, shows/<id>/show.md, shows/<id>/refs/<id>.png
 //   shows/<id>/epNN.json, shows/<id>/epNN.mp4, shows/<id>/epNN/<clip>.png, shows/<id>/epNN/<clip>.mp4
 //   scripts/<file>   show scripts uploaded from the admin page
-// Anyone can read. Writing needs the admin key. /api/bot wakes the Grok Bot.
+// Anyone can read. Writing needs the admin key.
+// /api/director wakes Claude (the director routine), /api/bot wakes the Grok bot. Both take {"task": "..."}.
 
 const TYPES = { mp4: 'video/mp4', json: 'application/json', jpg: 'image/jpeg', png: 'image/png', md: 'text/markdown; charset=utf-8' };
 
@@ -17,13 +18,13 @@ export default {
       return Response.json({ files: list.objects.map(o => o.key), folders: list.delimitedPrefixes });
     }
 
-    if (path === '/api/bot' && req.method === 'POST') {
+    if ((path === '/api/director' || path === '/api/bot') && req.method === 'POST') {
       if (!authed) return new Response('Unauthorized', { status: 401 });
-      const res = await fetch(env.BOT_WEBHOOK_URL, {
-        method: 'POST',
-        headers: { authorization: `Bearer ${env.BOT_WEBHOOK_KEY}`, 'content-type': 'application/json' },
-        body: await req.text(),
-      });
+      const { task } = await req.json();
+      const [target, headers, body] = path === '/api/director'
+        ? [env.DIRECTOR_URL, { authorization: `Bearer ${env.DIRECTOR_KEY}`, 'anthropic-version': '2023-06-01' }, { text: task }]
+        : [env.BOT_WEBHOOK_URL, { authorization: `Bearer ${env.BOT_WEBHOOK_KEY}` }, { task }];
+      const res = await fetch(target, { method: 'POST', headers: { ...headers, 'content-type': 'application/json' }, body: JSON.stringify(body) });
       return new Response(await res.text(), { status: res.status });
     }
 

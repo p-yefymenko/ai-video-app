@@ -13,8 +13,9 @@ const send = (url, options) => fetch(url, { ...options, headers: { authorization
   return r;
 });
 const put = (path, body) => send(`/files/${encodeURI(path)}`, { method: 'PUT', body });
-const tellBot = task => send('/api/bot', { method: 'POST', body: JSON.stringify({ task }) })
-  .then(r => r.status !== 401 && alert(r.ok ? 'Sent to the bot' : `Failed: ${r.status}`));
+// Every task goes to the director (Claude), who hands drawing and animating to the Grok bot.
+const tellBot = task => send('/api/director', { method: 'POST', body: JSON.stringify({ task }) })
+  .then(r => r.status !== 401 && alert(r.ok ? 'Sent to the director' : `Failed: ${r.status}`));
 
 const root = document.getElementById('admin');
 home();
