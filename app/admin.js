@@ -69,11 +69,11 @@ async function editEpisode(show, name) {
 
   // The director's clips.md has a "## 01" section per shot; show each section's prompts with its shot.
   const script = await fetch(`/files/${base}/clips.md`).then(r => (r.ok ? r.text() : ''));
-  const descriptions = Object.fromEntries(script.split(/^## /m).slice(1).map(section => {
+  const descriptions = new Map(script.split(/^## /m).slice(1).map(section => {
     const [id, ...lines] = section.trim().split('\n');
     return [id.trim(), lines.filter(line => !/^(#|Refs:|Length:|Layout:)/.test(line)).join('\n').trim()];
   }));
-  const clips = Object.keys(descriptions);
+  const clips = [...descriptions.keys()];
 
   // Every video gets its own notes list. Notes without a clip belong to the whole episode.
   const lists = [];
@@ -131,7 +131,7 @@ async function editEpisode(show, name) {
       hasEpisode ? publish : null),
     ...(hasEpisode ? [episodeVideo, notes(episodeVideo)] : [notes({})]),
     h('h3', { textContent: 'Shots' }),
-    ...clips.map(clip => clipEditor(`/files/${base}/${clip}`, clip, files, data, save, notes, descriptions[clip], make)),
+    ...clips.map(clip => clipEditor(`/files/${base}/${clip}`, clip, files, data, save, notes, descriptions.get(clip), make)),
   );
   drawNotes();
 }
