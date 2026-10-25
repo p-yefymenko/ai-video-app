@@ -7,6 +7,27 @@ function h(tag, props = {}, ...children) {
   return el;
 }
 
+// Adds an episode's subtitles (epNN.en.vtt, epNN.ru.vtt) to its video and returns a button that switches them Off → EN → RU.
+// The choice is remembered and applies to every video.
+const languages = ['off', 'en', 'ru'];
+function subtitles(video, base) {
+  languages.slice(1).forEach(lang => video.append(h('track', { kind: 'subtitles', srclang: lang, label: lang.toUpperCase(), src: `${base}.${lang}.vtt` })));
+  const button = h('button', { className: 'subs' });
+  const show = () => {
+    const lang = localStorage.getItem('subtitles') || 'off';
+    [...video.textTracks].forEach(track => { track.mode = track.language === lang ? 'showing' : 'disabled'; });
+    button.textContent = `Subtitles: ${lang.toUpperCase()}`;
+  };
+  button.onclick = () => {
+    const next = languages[(languages.indexOf(localStorage.getItem('subtitles') || 'off') + 1) % languages.length];
+    localStorage.setItem('subtitles', next);
+    document.dispatchEvent(new Event('subtitles'));
+  };
+  document.addEventListener('subtitles', show);
+  show();
+  return button;
+}
+
 const list = prefix => fetch(`/api/list?prefix=${encodeURIComponent(prefix)}`).then(r => r.json());
 const getJson = key => fetch(`/files/${key}`).then(r => (r.ok ? r.json() : null));
 

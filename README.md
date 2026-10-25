@@ -37,6 +37,7 @@ shows/<id>/show.md        the show bible: characters, places, things, episodes
 shows/<id>/refs/<ref>.png one reference image per character, place and thing
 shows/<id>/epNN.json      title, status (draft/published), trims, notes
 shows/<id>/epNN.mp4       the episode
+shows/<id>/epNN.en.vtt, epNN.ru.vtt   its subtitles, switched on and off in the app
 shows/<id>/epNN/clips.md  the episode's scenes and shots, with every prompt
 shows/<id>/epNN/<clip>.png, <clip>.mp4   each shot's first frame and video
 scripts/<file>            scripts uploaded from admin

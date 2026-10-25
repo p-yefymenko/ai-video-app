@@ -26,11 +26,12 @@ function openFeed(show, episodes) {
   feed.replaceChildren(
     h('button', { className: 'close', textContent: '×', onclick: () => history.back() }),
     ...episodes.map(ep => {
-      const video = h('video', { src: `/files/shows/${show.id}/${ep.name}.mp4`, playsInline: true, preload: 'metadata' });
+      const base = `/files/shows/${show.id}/${ep.name}`;
+      const video = h('video', { src: `${base}.mp4`, playsInline: true, preload: 'metadata' });
       video.onclick = () => (video.muted ? (video.muted = false) : video.paused ? video.play() : video.pause());
       video.onended = () => video.parentElement.nextElementSibling?.scrollIntoView({ behavior: 'smooth' });
       observer.observe(video);
-      return h('section', {}, video, h('p', { className: 'label', textContent: `${show.title} · Ep ${+ep.name.slice(2)}` }));
+      return h('section', {}, video, h('p', { className: 'label', textContent: `${show.title} · Ep ${+ep.name.slice(2)}` }), subtitles(video, base));
     }),
   );
   feed.hidden = false;

@@ -77,12 +77,15 @@ Refs: lyra, village
 Length: 3
 Frame: <exact image prompt for the first frame>
 Video: <exact video prompt>
+En: <the line, in English>
+Ru: <the line, in Russian>
 ```
 
 - **Refs:** the references the shot needs (up to 14).
 - **Length:** seconds, usually 2–3; no cuts inside a shot.
 - **Frame:** the shot's first frame as a still: framing, the place, and where each person is, what they do and where they look, following the layout. End with the Style.
 - **Video:** what moves and what is heard, from that frame on. The line followed by the speaker's Voice in brackets, word for word, and "(off-screen)" or "(voice-over)" when the speaker isn't the one seen saying it. End with the Style and "One continuous shot, no cuts."
+- **En / Ru:** the shot's line as subtitles, in English and Russian. Leave both out when no one speaks.
 
 A character, place or thing the episode needs for the first time goes into `show.md` first, so it gets a reference.
 
