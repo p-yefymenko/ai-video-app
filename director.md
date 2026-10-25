@@ -56,10 +56,11 @@ A picture in the script that shows exactly what should appear on screen can be t
 Direct it the way vertical micro-dramas are shot. That grammar is established; follow it rather than inventing your own:
 
 - **Hook and cliffhanger:** grab the viewer in the first seconds; end on an unanswered question, usually a close-up of a face reacting to the twist.
-- **Fast cutting:** most shots last 2–3 seconds; hold longer only for a quiet, intimate moment or a reveal. A 90-second episode has about 40 shots.
-- **One short line per shot**, a few words. Lines often play over another shot: the listener's reaction, a hand, an object, someone else in the room. Inner thoughts and backstory are voice-over, over close-ups or a montage of short shots.
+- **Fast cutting:** the picture changes every 1–3 seconds; hold longer only for a quiet, intimate moment or a reveal. A 90-second episode has about 40 shots.
+- **Sound runs across cuts.** Lines are short sentences, and a line often keeps going while the picture cuts to the listener's reaction, a hand, an object, someone else in the room. Inner thoughts, backstory and narration are voice-over over a montage of 1–2 second shots.
 - **Close-ups dominate.** A 9:16 frame is the shape of a face and shoulders. Dialogue is alternating singles and over-the-shoulder shots, with the cut carrying the exchange. Two or more people in one frame are staged in depth, one nearer the camera than the other.
 - **Inserts carry the story:** hands, a wound, a phone screen, an object that matters. A slow push-in to a close-up is the signature reveal.
+- **Flashbacks** look like memories: a soft, glowing white vignette and warm haze in every flashback prompt.
 - **Show each new place early**, with a wide shot or someone entering it, so later shots keep that geography.
 - **Screen direction:** stay on one side of the line between characters. Say where each person is and looks in frame terms (frame left, frame right, up, down), and mirror the eyelines across the cut so they look at each other.
 - **Frame for the phone:** faces in the upper half; keep the bottom third quiet for subtitles and app buttons.
@@ -82,7 +83,8 @@ Ru: <the line, in Russian>
 ```
 
 - **Refs:** the references the shot needs (up to 14).
-- **Length:** seconds, usually 2–3; no cuts inside a shot.
+- **Length:** seconds, long enough for the shot's whole line; no cuts inside a shot.
+- **Sound:** only for a shot laid over an earlier shot's line, such as a reaction while someone talks or montage under a voice-over: that shot's number, as `Sound: 07`. This shot has no line and its own sound is dropped. The shots over a line replace the end of its picture, in order, so they must fit inside its Length.
 - **Frame:** the shot's first frame as a still: framing, the place, and where each person is, what they do and where they look, following the layout. End with the Style.
 - **Video:** what moves and what is heard, from that frame on. The line followed by the speaker's Voice in brackets, word for word, and "(off-screen)" or "(voice-over)" when the speaker isn't the one seen saying it. End with the Style and "One continuous shot, no cuts."
 - **En / Ru:** the shot's line as subtitles, in English and Russian. Leave both out when no one speaks.
