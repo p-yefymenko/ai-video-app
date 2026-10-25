@@ -10,20 +10,21 @@ Three parts, each doing what it's best at:
 
 ## How it works
 
-1. **New show:** in the admin page, attach the script (or type a description), optionally set how many episodes, and press Create. The director plans the whole story (episode 1 runs 2–3 minutes, the rest about one) and directs episode 1. The Grok bot draws each shot's first frame, and the director checks them.
-2. **Storyboard:** the frames appear in admin. Leave notes on them and press **Send notes** to have them redrawn. When they look right, press **Make videos**: the Grok bot animates each frame into a clip.
-3. **Review:** the episode appears in admin as a draft. Leave notes pinned to a second of the episode or of a clip, or set where a clip should start and end, then press **Send notes and cuts**.
+1. **New show:** in the admin page, attach the script (or type a description), optionally set how many episodes, and press Create. The director plans the whole story (episode 1 runs 2–3 minutes, the rest about 90 seconds) and writes episode 1 as shots, each with its prompts.
+2. **Shots:** the episode appears in admin with every shot's prompts. Press **Draw frame** or **Make video** next to a shot, or **Draw all frames** / **Make all videos**. The Grok bot makes only what is missing, and the director checks each drawn frame. A video without a frame is made from the reference images alone.
+3. **Review:** leave notes on a frame, a clip, or a second of the episode, or set where a clip should start and end, then press **Send notes and cuts**. The director rewrites the shots and deletes what must be remade; its buttons come back. Once every shot has a video, the bot joins them into the episode.
 4. **Publish**, then **Next episode**. When the script runs out, the director continues the story itself.
 
 ```
-admin ──task──▶ director (Claude) ──Draw / Animate──▶ Grok bot
-                      ▲                                  │
-                      └──────────── Frames ready ────────┘
+admin ──New show / Next episode / Fix──▶ director (Claude)
+  │                                         │  ▲
+  └──Draw / Animate──▶ Grok bot ◀──Draw─────┘  │
+                          └──── Frames ready ──┘
 ```
 
-Tasks to the director: `New show: …`, `Next episode: <id>`, `Fix: <id> <epNN>`, `Make videos: <id> <epNN>`, `Frames ready: <id> <epNN>`. Tasks to the Grok bot: `Draw: <id> <epNN>`, `Animate: <id> <epNN>`.
+Tasks to the director: `New show: …`, `Next episode: <id>`, `Fix: <id> <epNN>`, `Frames ready: <id> <epNN> <clips>`. Tasks to the Grok bot: `Draw: <id> <epNN> [clips]`, `Animate: <id> <epNN> [clips]` (no clips means every shot).
 
-**Consistency:** every frame is drawn from the same reference images and follows its scene's layout, and every video starts from its frame. Nothing is regenerated without a reason: the director redraws a broken frame at most once, and everything else waits for the owner.
+**Consistency:** every frame is drawn from the same reference images and follows its scene's layout, and a video starts from its frame when the shot has one. Nothing is generated without the owner asking, except that the director redraws a broken frame at most once.
 
 ## The app
 
@@ -34,7 +35,7 @@ shows/<id>/show.json      title, description
 shows/<id>/cover.jpg
 shows/<id>/show.md        the show bible: characters, places, things, episodes
 shows/<id>/refs/<ref>.png one reference image per character, place and thing
-shows/<id>/epNN.json      title, status (storyboard/draft/published), trims, notes
+shows/<id>/epNN.json      title, status (draft/published), trims, notes
 shows/<id>/epNN.mp4       the episode
 shows/<id>/epNN/clips.md  the episode's scenes and shots, with every prompt
 shows/<id>/epNN/<clip>.png, <clip>.mp4   each shot's first frame and video

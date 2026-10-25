@@ -13,9 +13,11 @@ const send = (url, options) => fetch(url, { ...options, headers: { authorization
   return r;
 });
 const put = (path, body) => send(`/files/${encodeURI(path)}`, { method: 'PUT', body });
-// Every task goes to the director (Claude), who hands drawing and animating to the Grok bot.
-const tellBot = task => send('/api/director', { method: 'POST', body: JSON.stringify({ task }) })
-  .then(r => r.status !== 401 && alert(r.ok ? 'Sent to the director' : `Failed: ${r.status}`));
+// Writing and judging go to the director (Claude); drawing and animating go straight to the Grok bot.
+const post = (url, done) => task => send(url, { method: 'POST', body: JSON.stringify({ task }) })
+  .then(r => r.status !== 401 && alert(r.ok ? done : `Failed: ${r.status}`));
+const tellDirector = post('/api/director', 'Sent to the director');
+const tellBot = post('/api/bot', 'Sent to the Grok bot');
 
 const root = document.getElementById('admin');
 home();
@@ -26,7 +28,7 @@ async function home() {
     h('h2', { textContent: show.title || show.id }),
     h('p', { textContent: `id: ${show.id}` }),
     h('div', { className: 'row' },
-      h('button', { textContent: 'Next episode', onclick: () => tellBot(`Next episode: ${show.id}`) }),
+      h('button', { textContent: 'Next episode', onclick: () => tellDirector(`Next episode: ${show.id}`) }),
       h('button', { textContent: 'Delete show', onclick: () => deleteShow(show) })),
     h('ul', {}, show.episodes.map(ep => h('li', {},
       h('a', { href: '#', textContent: `${ep.name} · ${ep.title || ''} · ${ep.status}`, onclick: e => { e.preventDefault(); editEpisode(show, ep.name); } })))))));
@@ -51,7 +53,7 @@ function newShowForm() {
       await put(path, script);
       task += `\nScript: ${location.origin}/files/${path}`;
     }
-    tellBot(task);
+    tellDirector(task);
   };
   return h('section', { className: 'panel' }, h('h2', { textContent: 'New show' }), text,
     h('div', { className: 'row' }, file, episodes, h('button', { textContent: 'Create', onclick: create })));
@@ -60,18 +62,18 @@ function newShowForm() {
 async function editEpisode(show, name) {
   const base = `shows/${show.id}/${name}`;
   const data = { trims: {}, notes: [], ...(await getJson(`${base}.json`)) };
-  const storyboard = data.status === 'storyboard';
-  // Each clip has a first frame (01.png) and, once videos are made, a video (01.mp4).
+  // Each shot may have a first frame (01.png) and a video (01.mp4); the episode is joined into epNN.mp4.
   const files = (await list(`${base}/`)).files.map(f => f.split('/').pop());
-  const clips = [...new Set(files.filter(f => /\.(png|mp4)$/.test(f)).map(f => f.split('.')[0]))].sort();
+  const hasEpisode = (await list(base)).files.includes(`${base}.mp4`);
   const save = () => put(`${base}.json`, JSON.stringify(data, null, 2));
 
-  // The bot's clips.md has a "## 01" section per clip; show each section's Frame and Action with its clip.
+  // The director's clips.md has a "## 01" section per shot; show each section's prompts with its shot.
   const script = await fetch(`/files/${base}/clips.md`).then(r => (r.ok ? r.text() : ''));
   const descriptions = Object.fromEntries(script.split(/^## /m).slice(1).map(section => {
     const [id, ...lines] = section.trim().split('\n');
     return [id.trim(), lines.filter(line => !/^(#|Refs:|Length:|Layout:)/.test(line)).join('\n').trim()];
   }));
+  const clips = Object.keys(descriptions);
 
   // Every video gets its own notes list. Notes without a clip belong to the whole episode.
   const lists = [];
@@ -106,38 +108,49 @@ async function editEpisode(show, name) {
     save();
   };
 
-  // Shows what the bot will read from epNN.json (open notes and cuts) and asks before sending.
-  const ask = (task, question) => () => {
+  // Shows what the director will read from epNN.json (open notes and cuts) and asks before sending.
+  const ask = () => {
     const open = data.notes.filter(n => !n.done).map(n => `• ${n.clip ? `Clip ${n.clip}` : 'Episode'}: ${label(n)}`);
     const cuts = Object.entries(data.trims).filter(([, t]) => t.start != null || t.end != null)
       .map(([clip, t]) => `• Clip ${clip}: keep from ${t.start ?? 0}s to ${t.end != null ? `${t.end}s` : 'the end'}`);
-    const summary = `Notes to fix:\n${open.join('\n') || '• none'}\n\nCuts:\n${cuts.join('\n') || '• none'}\n\n${question}`;
-    if (confirm(summary)) tellBot(`${task}: ${show.id} ${name}`);
+    const summary = `Notes to fix:\n${open.join('\n') || '• none'}\n\nCuts:\n${cuts.join('\n') || '• none'}\n\nSend to the director?`;
+    if (confirm(summary)) tellDirector(`Fix: ${show.id} ${name}`);
   };
 
-  // Storyboard: notes on the frames, then Make videos. Afterwards: the episode, cuts and Publish.
+  // Drawing and animating, for the given shots or, with none given, for every shot that still misses its file.
+  const make = (task, ...only) => tellBot(`${task}: ${show.id} ${name}${only.map(clip => ` ${clip}`).join('')}`);
+  const all = (task, what) => () => confirm(`${what} for every shot that doesn't have one yet?`) && make(task);
+
   root.replaceChildren(
     h('button', { textContent: '← Back', onclick: home }),
     h('h2', { textContent: `${show.title} · ${name} · ${data.title || ''}` }),
-    storyboard
-      ? h('div', { className: 'row' },
-        h('button', { textContent: 'Send notes', onclick: ask('Fix', 'Send to the bot to redraw?') }),
-        h('button', { textContent: 'Make videos', onclick: ask('Make videos', 'Make the videos from these frames?') }))
-      : h('div', { className: 'row' }, publish, h('button', { textContent: 'Send notes and cuts', onclick: ask('Fix', 'Send to the bot?') })),
-    ...(storyboard ? [notes({})] : [episodeVideo, notes(episodeVideo)]),
-    h('h3', { textContent: storyboard ? 'Frames' : 'Clips' }),
-    ...clips.map(clip => clipEditor(`/files/${base}/${clip}`, clip, files.includes(`${clip}.mp4`), data, save, notes, descriptions)),
+    h('div', { className: 'row' },
+      h('button', { textContent: 'Draw all frames', onclick: all('Draw', 'Draw the frame') }),
+      h('button', { textContent: 'Make all videos', onclick: all('Animate', 'Make the video') }),
+      h('button', { textContent: 'Send notes and cuts', onclick: ask }),
+      hasEpisode ? publish : null),
+    ...(hasEpisode ? [episodeVideo, notes(episodeVideo)] : [notes({})]),
+    h('h3', { textContent: 'Shots' }),
+    ...clips.map(clip => clipEditor(`/files/${base}/${clip}`, clip, files, data, save, notes, descriptions[clip], make)),
   );
   drawNotes();
 }
 
 const label = note => `${note.at != null ? `@ ${note.at}s: ` : ''}${note.text}`;
 
-// One clip: its frame, or its video with where to cut its start and end, and notes on it.
-function clipEditor(path, clip, hasVideo, data, save, notes, descriptions) {
-  const description = descriptions[clip];
-  const summary = description ? h('details', {}, h('summary', { textContent: description })) : null;
-  if (!hasVideo) return h('div', { className: 'clip' }, h('h3', { textContent: `Clip ${clip}` }), summary, h('img', { src: `${path}.png` }), notes({}, clip));
+// One shot: its prompts, its frame or its video with where to cut its start and end, and notes on it.
+// Until it has a video, buttons make its missing frame or video.
+function clipEditor(path, clip, files, data, save, notes, description, make) {
+  const summary = h('details', {}, h('summary', { textContent: description }));
+  const hasFrame = files.includes(`${clip}.png`);
+  if (!files.includes(`${clip}.mp4`)) return h('div', { className: 'clip' },
+    h('h3', { textContent: `Clip ${clip}` }),
+    summary,
+    hasFrame ? h('img', { src: `${path}.png` }) : null,
+    h('div', { className: 'row' },
+      hasFrame ? null : h('button', { textContent: 'Draw frame', onclick: () => make('Draw', clip) }),
+      h('button', { textContent: 'Make video', onclick: () => make('Animate', clip) })),
+    notes({}, clip));
 
   const video = h('video', { src: `${path}.mp4`, controls: true, playsInline: true, preload: 'metadata' });
   const trim = data.trims[clip] || {};
