@@ -19,7 +19,7 @@ A show `<id>` (kebab-case) is the folder `shows/<id>/`:
 - `show.json`: `{"title", "description"}` for the viewer app.
 - `show.md`: the show bible.
 - `refs/<ref>.png`: one reference image per character, place and thing.
-- `epNN/clips.md`: an episode's shots. `epNN/<clip>.png`: each shot's first frame. `epNN/<clip>.mp4`: each shot's video.
+- `epNN/clips.md`: an episode's scenes and shots. `epNN/scene-N.png`: each scene's picture. `epNN/<clip>.png`: each shot's first frame. `epNN/<clip>.mp4`: each shot's video.
 - `epNN.json`: `{"title", "status", "trims": {}, "notes": []}`. Status is `draft`, then `published`. Trims cut a clip: `{"03": {"start": 0.5, "end": 6.2}}`. Notes are the owner's review: `{"clip": "03", "at": 2.5, "text": "...", "done": false}`, where `at` is seconds into the clip, or into the episode when there is no `clip`.
 
 ## Tasks
@@ -30,13 +30,13 @@ A show `<id>` (kebab-case) is the folder `shows/<id>/`:
 
 The owner reads your shots in the admin page and starts the drawing and animating there, shot by shot or all at once.
 
-**Frames ready: <id> <epNN> <clips>** comes from the Grok bot. Check those frames and every new reference image. Look at each one next to the references it was drawn from, and ask: are these the right people, place and things? Does it match the scene's layout and the shot's text? Is it physically real (bodies, hands, limbs, objects where they belong, nothing doubled or extra)? For a broken picture, rewrite its prompt so it can't go wrong the same way, delete the picture, record it in `epNN.json` as a note `{"clip": "03", "text": "Claude: <problem>", "done": true, "answer": "Redrew it"}` (for a reference, `"ref": "<id>"` instead of `clip`), and send `Draw` with the shots to redraw (for a reference, the shots that use it). Redraw each picture yourself at most once: if it already has such a note and is still wrong, leave it to the owner with an open note `{"clip": "03", "text": "Claude: <problem>", "done": false}`.
+**Frames ready: <id> <epNN> <clips>** comes from the Grok bot. Check those frames and every new reference image and scene picture. Look at each one next to the pictures it was drawn from, and ask: are these the right people, place and things? Is everyone where the scene picture has them, seen from this shot's camera? Does it match the shot's text? Is it physically real (bodies, hands, limbs, objects where they belong, nothing doubled or extra)? For a broken picture, rewrite its prompt so it can't go wrong the same way, delete the picture, record it in `epNN.json` as a note `{"clip": "03", "text": "Claude: <problem>", "done": true, "answer": "Redrew it"}` (for a reference or scene picture, `"ref": "<id or scene-N>"` instead of `clip`), and send `Draw` with the shots to redraw (for a reference or scene picture, the shots drawn from it, whose frames you delete too). Redraw each picture yourself at most once: if it already has such a note and is still wrong, leave it to the owner with an open note `{"clip": "03", "text": "Claude: <problem>", "done": false}`.
 
 **Fix: <id> <epNN>** comes from the owner. Do what each open note asks: rewrite shots, delete the frames and videos that must change, or set trims. A changed frame also needs a new video. Never cut away dialogue or a story moment to hide a problem; remake instead. Set each note's `done: true` with an `answer` saying in a few words what you did. Then send `Draw` with the shots whose frame you deleted. If you only changed trims, send `Animate` to join the episode again. The owner starts the new videos.
 
 What the Grok bot does with your tasks:
 
-- **Draw: <id> <epNN> [clips]**: draws the missing reference images and frames for those shots (all shots if no clips are listed), then sends you `Frames ready`.
+- **Draw: <id> <epNN> [clips]**: draws the missing reference images, scene pictures and frames for those shots (all shots if no clips are listed), then sends you `Frames ready`.
 - **Animate: <id> <epNN> [clips]**: makes the missing videos for those shots and, once every shot has one, cuts and joins them into `epNN.mp4`.
 
 ## The bible: `show.md`
@@ -67,14 +67,17 @@ Direct it the way vertical micro-dramas are shot. That grammar is established; f
 
 The one thing to design around: **every shot is generated alone, from its first frame and its own text, with no memory of any other shot.** Give each shot one simple action: a line, a look, a touch, a step. Bodies that turn around or a camera circling the action come out morphed.
 
+What holds a scene together is its **scene picture**: one wide shot of the place with everyone where they stand. Every frame in the scene is drawn from it as the same moment seen from another camera position, so the people, the place and where everything is stay the same from shot to shot.
+
 Write the episode as scenes and shots:
 
 ```
 # Scene 1: the well at noon
-Layout: The stone well stands in the middle of the dusty square... (where every person and prop is, and which way people face)
+Refs: lyra, elder, village
+Layout: <exact image prompt for the scene picture>
 
 ## 01
-Refs: lyra, village
+Refs: lyra
 Length: 3
 Frame: <exact image prompt for the first frame>
 Video: <exact video prompt>
@@ -82,10 +85,11 @@ En: <the line, in English>
 Ru: <the line, in Russian>
 ```
 
-- **Refs:** the references for what is seen in this frame (up to 14). The image model copies a reference into the picture, a place's reference with its whole view, so leave out anyone off-screen, and leave out a place's reference when the camera looks the other way; describe that background in the Frame instead.
+- **Layout:** a wide shot of the place and its light, with every person and prop of the scene where they are and which way they face. A scene is one place and one arrangement of people; when they move somewhere else, start a new scene. The scene's **Refs** are the place and everyone in it.
+- **Refs:** the characters and things seen in this frame (up to 13). The image model copies a reference into the picture, so leave out anyone off-screen. The place comes from the scene picture.
 - **Length:** seconds, long enough for the shot's whole line; no cuts inside a shot.
 - **Sound:** only for a shot laid over an earlier shot's line, such as a reaction while someone talks or montage under a voice-over: that shot's number, as `Sound: 07`. This shot has no line and its own sound is dropped. The shots over a line replace the end of its picture, in order, so they must fit inside its Length.
-- **Frame:** the shot's first frame as a still: framing, the place and its light, and where each person is, what they do and where they look, following the layout. End with the Style.
+- **Frame:** the shot's first frame as a still: the scene picture's moment seen from this shot's camera. Say where the camera is and which way it looks, the framing, the light, and what each person seen does and where they look. End with the Style.
 - **Video:** what moves and what is heard, from that frame on. The line followed by the speaker's Voice in brackets, word for word, and "(off-screen)" or "(voice-over)" when the speaker isn't the one seen saying it. End with the Style and "One continuous shot, no cuts."
 - **En / Ru:** the shot's line as subtitles, in English and Russian. Leave both out when no one speaks.
 

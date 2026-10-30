@@ -24,7 +24,7 @@ admin ──New show / Next episode / Fix──▶ director (Claude)
 
 Tasks to the director: `New show: …`, `Next episode: <id>`, `Fix: <id> <epNN>`, `Frames ready: <id> <epNN> <clips>`. Tasks to the Grok bot: `Draw: <id> <epNN> [clips]`, `Animate: <id> <epNN> [clips]` (no clips means every shot).
 
-**Consistency:** every frame is drawn from the same reference images and follows its scene's layout, and a video starts from its frame when the shot has one. Nothing is generated without the owner asking, except that the director redraws a broken frame at most once.
+**Consistency:** every scene first gets one wide picture with everyone in place, drawn from the reference images; each frame is that moment from another camera, and a video starts from its frame when the shot has one. Nothing is generated without the owner asking, except that the director redraws a broken frame at most once.
 
 ## The app
 
@@ -39,6 +39,7 @@ shows/<id>/epNN.json      title, status (draft/published), trims, notes
 shows/<id>/epNN.mp4       the episode
 shows/<id>/epNN.en.vtt, epNN.ru.vtt   its subtitles, switched on and off in the app
 shows/<id>/epNN/clips.md  the episode's scenes and shots, with every prompt
+shows/<id>/epNN/scene-N.png   each scene's wide shot with everyone in place; its frames are drawn from it
 shows/<id>/epNN/<clip>.png, <clip>.mp4   each shot's first frame and video
 scripts/<file>            scripts uploaded from admin
 ```

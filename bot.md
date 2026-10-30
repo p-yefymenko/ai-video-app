@@ -10,7 +10,7 @@ Everything lives in the app. Its address is in `$APP_URL` and its key in `$APP_K
 - Upload: `curl -X PUT -H "Authorization: Bearer $APP_KEY" --data-binary @<file> "$APP_URL/files/<path>"`.
 - Tell the director: `curl -X POST -H "Authorization: Bearer $APP_KEY" -H "content-type: application/json" -d '{"task": "Frames ready: <id> <epNN> <clips>"}' "$APP_URL/api/director"`.
 
-A show `<id>` is the app folder `shows/<id>/`: `show.md` (characters, places and things, each with an id and a **Picture** prompt), `refs/<ref>.png`, `epNN/clips.md` (shots, each with `Refs`, `Length`, `Frame` and `Video`), `epNN/<clip>.png`, `epNN/<clip>.mp4` and `epNN.json`. Work in `/workspace/shows/<id>/`, and download what you need from the app first.
+A show `<id>` is the app folder `shows/<id>/`: `show.md` (characters, places and things, each with an id and a **Picture** prompt), `refs/<ref>.png`, `epNN/clips.md` (scenes, each with `Refs` and a `Layout`, and their shots, each with `Refs`, `Length`, `Frame` and `Video`), `epNN/scene-N.png`, `epNN/<clip>.png`, `epNN/<clip>.mp4` and `epNN.json`. Work in `/workspace/shows/<id>/`, and download what you need from the app first.
 
 ## Tasks
 
@@ -18,13 +18,14 @@ Each task may end with a list of clips, such as `Draw: <id> ep01 03 07`. Then wo
 
 **Draw: <id> <epNN> [clips]**
 
-1. For every ref those shots use without `refs/<ref>.png` in the app: generate an image from its Picture prompt in `show.md`, 9:16, and upload it there.
-2. For every one of those shots without `epNN/<clip>.png` in the app: generate an image from its Frame prompt, 9:16, with the shot's `Refs` as reference images, and upload it there.
-3. Tell the director `Frames ready: <id> <epNN> <the clips you drew>`.
+1. For every ref those shots and their scenes use without `refs/<ref>.png` in the app: generate an image from its Picture prompt in `show.md`, 9:16, and upload it there.
+2. For every scene those shots are in (`# Scene N` in `clips.md`) without `epNN/scene-N.png` in the app: generate an image from its Layout prompt, 9:16, with the scene's `Refs` as reference images, and upload it there.
+3. For every one of those shots without `epNN/<clip>.png` in the app: generate an image from its Frame prompt, 9:16, with its scene picture as the first reference image and the shot's `Refs` after it, and upload it there. Introduce the scene picture as the whole scene at this moment, now seen from another camera position.
+4. Tell the director `Frames ready: <id> <epNN> <the clips you drew>`.
 
 **Animate: <id> <epNN> [clips]**
 
-1. For every one of those shots without `epNN/<clip>.mp4` in the app: generate a video from its Video prompt, with `epNN/<clip>.png` as the start image if there is one, the shot's `Refs` as reference images, 9:16, 720p, the shot's Length, with audio. Upload it.
+1. For every one of those shots without `epNN/<clip>.mp4` in the app: generate a video from its Video prompt, with `epNN/<clip>.png` as the start image if there is one, otherwise its scene picture and the shot's `Refs` as reference images, 9:16, 720p, the shot's Length, with audio. Upload it.
 2. If every shot in `epNN/clips.md` now has a video: download them and `epNN.json`. With ffmpeg, cut each clip by its `trims` (seconds; a missing start or end means no cut). A shot with `Sound: <clip>` gives only its picture, which replaces the end of that clip's picture, in order, while that clip's sound plays on: clip 07 (4 s) with 08 (2 s) and 09 (1 s) over it shows 07 for 1 s, then 08, then 09, all over 07's whole sound. Join everything in order into `epNN.mp4`, re-encoded as H.264 and AAC. Upload it as `shows/<id>/epNN.mp4`. Then write the subtitles `epNN.en.vtt` and `epNN.ru.vtt` (WebVTT): for every shot with an `En:` and `Ru:` line, one cue with that line, timed from where that shot's sound starts to where it ends in `epNN.mp4` (measure the cut clips with ffprobe), with the cue setting `line:70%`. Upload them next to `epNN.mp4`.
 3. If the show has no `cover.jpg` yet and the episode was joined, upload a striking frame from it as `shows/<id>/cover.jpg`.
 

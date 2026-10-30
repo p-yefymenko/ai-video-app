@@ -131,6 +131,8 @@ async function editEpisode(show, name) {
       hasEpisode ? publish : null,
       hasEpisode ? subtitles(episodeVideo, `/files/${base}`) : null),
     ...(hasEpisode ? [episodeVideo, notes(episodeVideo)] : [notes({})]),
+    ...files.filter(f => /^scene-\d+\.png$/.test(f)).map(f => h('div', { className: 'clip' },
+      h('h3', { textContent: f.slice(0, -4) }), h('img', { src: `/files/${base}/${f}` }), notes({}, f.slice(0, -4)))),
     h('h3', { textContent: 'Shots' }),
     ...clips.map(clip => clipEditor(`/files/${base}/${clip}`, clip, files, data, save, notes, descriptions.get(clip), make)),
   );
