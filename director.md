@@ -82,7 +82,7 @@ En: <the line, in English>
 Ru: <the line, in Russian>
 ```
 
-- **Refs:** the references the shot needs (up to 14).
+- **Refs:** the references for what is seen in this frame (up to 14). The image model copies a reference into the picture, a place's reference with its whole view, so leave out anyone off-screen, and leave out a place's reference when the camera looks the other way; describe that background in the Frame instead.
 - **Length:** seconds, long enough for the shot's whole line; no cuts inside a shot.
 - **Sound:** only for a shot laid over an earlier shot's line, such as a reaction while someone talks or montage under a voice-over: that shot's number, as `Sound: 07`. This shot has no line and its own sound is dropped. The shots over a line replace the end of its picture, in order, so they must fit inside its Length.
 - **Frame:** the shot's first frame as a still: framing, the place and its light, and where each person is, what they do and where they look, following the layout. End with the Style.
