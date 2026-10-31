@@ -20,9 +20,18 @@ const tellDirector = post('/api/director', 'Sent to the director');
 const tellBot = post('/api/bot', 'Sent to the Grok bot');
 
 const root = document.getElementById('admin');
-home();
+start();
+
+// The open episode is kept in the address (#<show>/<epNN>), so a reload comes back to it.
+async function start() {
+  const [id, name] = location.hash.slice(1).split('/');
+  const show = id && (await loadShows()).find(s => s.id === id);
+  if (show) editEpisode(show, name);
+  else home();
+}
 
 async function home() {
+  history.replaceState(null, '', location.pathname);
   const shows = await loadShows();
   root.replaceChildren(newShowForm(), ...shows.map(show => h('section', { className: 'panel' },
     h('h2', { textContent: show.title || show.id }),
@@ -127,6 +136,13 @@ async function editEpisode(show, name) {
 
   // Drawing and animating, for the given shots or, with none given, for every shot that still misses its file.
   const make = (task, ...only) => tellBot(`${task}: ${show.id} ${name}${only.map(clip => ` ${clip}`).join('')}`);
+  // Draws the episode again with what is new, staying at the shot on screen.
+  const refresh = async () => {
+    const shown = [...root.querySelectorAll('.clip')].find(el => el.getBoundingClientRect().bottom > 0)?.querySelector('h3').textContent;
+    await editEpisode(show, name);
+    [...root.querySelectorAll('.clip h3')].find(el => el.textContent === shown)?.parentNode.scrollIntoView();
+  };
+
   const all = (task, what) => () => {
     const answer = prompt(`${what} for which shots, such as "01-20" or "03 07"? Leave empty for every shot that doesn't have one yet.`);
     if (answer === null) return;
@@ -134,8 +150,10 @@ async function editEpisode(show, name) {
     make(task, ...clips.filter(clip => ranges.some(([from, to = from]) => +clip >= from && +clip <= to)));
   };
 
+  history.replaceState(null, '', `#${show.id}/${name}`);
   root.replaceChildren(
     h('button', { textContent: '← Back', onclick: home }),
+    h('button', { className: 'refresh', textContent: '↻ Refresh', onclick: refresh }),
     h('h2', { textContent: `${show.title} · ${name} · ${data.title || ''}` }),
     h('div', { className: 'row' },
       h('button', { textContent: 'Draw all frames', onclick: all('Draw', 'Draw the frame') }),
