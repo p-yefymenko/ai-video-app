@@ -77,6 +77,7 @@ Refs: lyra, elder, village
 Layout: <exact image prompt for the scene picture>
 
 ## 01
+Beat: <what this shot tells the viewer>
 Refs: lyra
 Length: 3
 Frame: <exact image prompt for the first frame>
@@ -86,6 +87,7 @@ Ru: <the line, in Russian>
 ```
 
 - **Layout:** the scene picture: its people and props where they are and which way they face, with the place and its light around them, framed just wide enough that every one of them is large and clear. A scene is one group of people in one spot; someone watching from across the road, or a wide view of the whole place with small figures, is a scene of its own. When the group moves somewhere else, start a new scene. The scene's **Refs** are the place and everyone in it.
+- **Beat:** one plain line for the owner: what this shot tells the viewer and why it is there, such as "the well is dry" or "Hanna hears the hoofbeats and is afraid".
 - **Refs:** the characters and things seen in this frame (up to 13). The image model copies a reference into the picture, so leave out anyone off-screen. The place comes from the scene picture.
 - **Length:** seconds, long enough for the shot's whole line; no cuts inside a shot.
 - **Sound:** only for a shot laid over an earlier shot's line, such as a reaction while someone talks or montage under a voice-over: that shot's number, as `Sound: 07`. This shot has no line and its own sound is dropped. The shots over a line replace the end of its picture, in order, so they must fit inside its Length.
