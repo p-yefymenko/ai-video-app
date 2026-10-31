@@ -67,7 +67,7 @@ Direct it the way vertical micro-dramas are shot. That grammar is established; f
 
 The one thing to design around: **every shot is generated alone, from its first frame and its own text, with no memory of any other shot.** Give each shot one simple action: a line, a look, a touch, a step. Bodies that turn around or a camera circling the action come out morphed.
 
-What holds a scene together is its **scene picture**: one wide shot of the place with everyone where they stand. Every frame in the scene is drawn from it as the same moment seen from another camera position, so the people, the place and where everything is stay the same from shot to shot.
+What holds a scene together is its **scene picture**: one shot of the people who share the scene's shots, where they stand, framed just wide enough to show them all clearly. Every frame in the scene is drawn from it as the same moment seen from another camera position, so the people, the place and where everything is stay the same from shot to shot.
 
 Write the episode as scenes and shots:
 
@@ -85,11 +85,11 @@ En: <the line, in English>
 Ru: <the line, in Russian>
 ```
 
-- **Layout:** a wide shot of the place and its light, with every person and prop of the scene where they are and which way they face. A scene is one place and one arrangement of people; when they move somewhere else, start a new scene. The scene's **Refs** are the place and everyone in it.
+- **Layout:** the scene picture: its people and props where they are and which way they face, with the place and its light around them, framed just wide enough that every one of them is large and clear. A scene is one group of people in one spot; someone watching from across the road, or a wide view of the whole place with small figures, is a scene of its own. When the group moves somewhere else, start a new scene. The scene's **Refs** are the place and everyone in it.
 - **Refs:** the characters and things seen in this frame (up to 13). The image model copies a reference into the picture, so leave out anyone off-screen. The place comes from the scene picture.
 - **Length:** seconds, long enough for the shot's whole line; no cuts inside a shot.
 - **Sound:** only for a shot laid over an earlier shot's line, such as a reaction while someone talks or montage under a voice-over: that shot's number, as `Sound: 07`. This shot has no line and its own sound is dropped. The shots over a line replace the end of its picture, in order, so they must fit inside its Length.
-- **Frame:** the shot's first frame as a still: the scene picture's moment seen from this shot's camera. Say where the camera is and which way it looks, the framing, the light, and what each person seen does and where they look. End with the Style.
+- **Frame:** the shot's first frame as a still: the scene picture's moment seen from this shot's camera. Say where the camera is and which way it looks, the framing, the light, and what each person seen does and where they look. End with the Style. For a shot that is the scene picture itself, write `Frame: scene`.
 - **Video:** what moves and what is heard, from that frame on. The line followed by the speaker's Voice in brackets, word for word, and "(off-screen)" or "(voice-over)" when the speaker isn't the one seen saying it. End with the Style and "One continuous shot, no cuts."
 - **En / Ru:** the shot's line as subtitles, in English and Russian. Leave both out when no one speaks.
 
