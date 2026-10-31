@@ -19,7 +19,7 @@ Each task may end with a list of clips, such as `Draw: <id> ep01 03 07`. Then wo
 **Draw: <id> <epNN> [clips]**
 
 1. For every ref those shots and their scenes use without `refs/<ref>.png` in the app: generate an image from its Picture prompt in `show.md`, 9:16, and upload it there.
-2. For every scene those shots are in (`# Scene N` in `clips.md`) without `epNN/scene-N.png` in the app: generate an image from its Layout prompt, 9:16, with the scene's `Refs` as reference images, and upload it there.
+2. For every scene those shots are in (the `# Scene N` header above each shot in `clips.md`; a header can repeat, and the scene's Refs and Layout are under its first one) without `epNN/scene-N.png` in the app: generate an image from its Layout prompt, 9:16, with the scene's `Refs` as reference images, and upload it there.
 3. For every one of those shots without `epNN/<clip>.png` in the app: generate an image from its Frame prompt, 9:16, with its scene picture as the first reference image and the shot's `Refs` after it, and upload it there. Introduce the scene picture as the whole scene at this moment, now seen from another camera position. A shot whose Frame is `scene` gets a copy of its scene picture instead.
 4. Tell the director `Frames ready: <id> <epNN> <the clips you drew>`.
 

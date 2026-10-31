@@ -86,7 +86,7 @@ En: <the line, in English>
 Ru: <the line, in Russian>
 ```
 
-- **Layout:** the scene picture: its people and props where they are and which way they face, with the place and its light around them, framed just wide enough that every one of them is large and clear. A scene is one group of people in one spot; someone watching from across the road, or a wide view of the whole place with small figures, is a scene of its own. When the group moves somewhere else, start a new scene. The scene's **Refs** are the place and everyone in it.
+- **Layout:** the scene picture: its people and props where they are and which way they face, with the place and its light around them, framed just wide enough that every one of them is large and clear. A scene is one group of people in one spot; someone watching from across the road, or a wide view of the whole place with small figures, is a scene of its own. When the group moves somewhere else, start a new scene. The scene's **Refs** are the place and everyone in it. A shot belongs to the scene header above it, so to cut back to an earlier scene, repeat its header (`# Scene 1`) without Refs or Layout.
 - **Beat:** one plain line for the owner: what this shot tells the viewer and why it is there, such as "the well is dry" or "Hanna hears the hoofbeats and is afraid".
 - **Refs:** the characters and things seen in this frame (up to 13). The image model copies a reference into the picture, so leave out anyone off-screen. The place comes from the scene picture.
 - **Length:** seconds, long enough for the shot's whole line; no cuts inside a shot.
