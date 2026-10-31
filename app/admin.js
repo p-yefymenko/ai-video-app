@@ -20,6 +20,7 @@ const tellDirector = post('/api/director', 'Sent to the director');
 const tellBot = post('/api/bot', 'Sent to the Grok bot');
 
 const root = document.getElementById('admin');
+let timer; // reloads the open episode now and then
 start();
 
 // The open episode is kept in the address (#<show>/<epNN>), so a reload comes back to it.
@@ -31,6 +32,7 @@ async function start() {
 }
 
 async function home() {
+  clearInterval(timer);
   history.replaceState(null, '', location.pathname);
   const shows = await loadShows();
   root.replaceChildren(newShowForm(), ...shows.map(show => h('section', { className: 'panel' },
@@ -68,29 +70,15 @@ function newShowForm() {
     h('div', { className: 'row' }, file, episodes, h('button', { textContent: 'Create', onclick: create })));
 }
 
+// The episode page loads the episode again every 15 seconds, and right after a button is pressed, and rebuilds only
+// the parts that changed, so new frames, videos and the director's answers appear without the page jumping.
 async function editEpisode(show, name) {
+  clearInterval(timer);
   const base = `shows/${show.id}/${name}`;
-  const data = { trims: {}, notes: [], ...(await getJson(`${base}.json`)) };
-  // Each shot may have a first frame (01.png) and a video (01.mp4); the episode is joined into epNN.mp4.
-  const files = (await list(`${base}/`)).files.map(f => f.split('/').pop());
-  const hasEpisode = (await list(base)).files.includes(`${base}.mp4`);
-  const save = () => put(`${base}.json`, JSON.stringify(data, null, 2));
-
-  // The director's clips.md has "# Scene N" sections with a "## 01" section per shot; show each shot's prompts,
-  // and the scene picture and reference images its frame is drawn from.
-  const script = await fetch(`/files/${base}/clips.md`).then(r => (r.ok ? r.text() : ''));
-  const shots = new Map();
-  let scene;
-  script.split(/^## /m).forEach((section, i) => {
-    const [id, ...lines] = section.trim().split('\n');
-    const refs = (lines.find(line => line.startsWith('Refs:')) || 'Refs:').slice(5).split(',').map(ref => ref.trim()).filter(Boolean);
-    if (i) shots.set(id.trim(), {
-      description: lines.filter(line => !/^(#|Refs:|Length:|Layout:)/.test(line)).join('\n').trim(),
-      sources: [scene && `${base}/scene-${scene}.png`, ...refs.map(ref => `shows/${show.id}/refs/${ref}.png`)].filter(Boolean),
-    });
-    scene = section.match(/^# Scene (\d+)/m)?.[1] ?? scene;
-  });
-  const clips = [...shots.keys()];
+  const data = { trims: {}, notes: [] };
+  let files = [], shots = new Map(), clips = [];
+  let saves = 0, saved = Promise.resolve();
+  const save = () => { saves++; saved = put(`${base}.json`, JSON.stringify(data, null, 2)); };
 
   // Every video gets its own notes list. Notes without a clip belong to the whole episode.
   const lists = [];
@@ -117,14 +105,6 @@ async function editEpisode(show, name) {
     return h('div', {}, h('div', { className: 'row' }, input, h('button', { textContent: 'Note here', onclick: add })), ul);
   };
 
-  const episodeVideo = h('video', { src: `/files/${base}.mp4`, controls: true, playsInline: true });
-  const publish = h('button', { textContent: data.status === 'published' ? 'Unpublish' : 'Publish' });
-  publish.onclick = () => {
-    data.status = data.status === 'published' ? 'draft' : 'published';
-    publish.textContent = data.status === 'published' ? 'Unpublish' : 'Publish';
-    save();
-  };
-
   // Shows what the director will read from epNN.json (open notes and cuts) and asks before sending.
   const ask = () => {
     const open = data.notes.filter(n => !n.done).map(n => `• ${n.clip ? `Clip ${n.clip}` : 'Episode'}: ${label(n)}`);
@@ -137,24 +117,17 @@ async function editEpisode(show, name) {
   // Drawing and animating, for the given shots or, with none given, for every shot that still misses its file.
   // Shots sent to the bot are remembered in this browser until their file appears, and their buttons spin meanwhile.
   const pending = JSON.parse(localStorage.getItem('pending') || '{}');
-  Object.keys(pending).filter(key => key.startsWith(`${base}/`) && files.includes(key.slice(base.length + 1))).forEach(key => delete pending[key]);
-  localStorage.setItem('pending', JSON.stringify(pending));
   const file = (task, clip) => `${clip}.${task === 'Draw' ? 'png' : 'mp4'}`;
   const make = (task, ...only) => {
     (only.length ? only : clips).filter(clip => !files.includes(file(task, clip))).forEach(clip => { pending[`${base}/${file(task, clip)}`] = true; });
     localStorage.setItem('pending', JSON.stringify(pending));
-    return tellBot(`${task}: ${show.id} ${name}${only.map(clip => ` ${clip}`).join('')}`).then(refresh);
+    update();
+    tellBot(`${task}: ${show.id} ${name}${only.map(clip => ` ${clip}`).join('')}`);
   };
   const button = (task, clip) => {
     const busy = pending[`${base}/${file(task, clip)}`];
     return h('button', { className: busy ? 'busy' : '', textContent: task === 'Draw' ? 'Draw frame' : 'Make video',
       onclick: () => (!busy || confirm('Already sent to the Grok bot. Send again?')) && make(task, clip) });
-  };
-  // Draws the episode again with what is new, staying at the shot on screen.
-  const refresh = async () => {
-    const shown = [...root.querySelectorAll('.clip')].find(el => el.getBoundingClientRect().bottom > 0)?.querySelector('h3').textContent;
-    await editEpisode(show, name);
-    [...root.querySelectorAll('.clip h3')].find(el => el.textContent === shown)?.parentNode.scrollIntoView();
   };
 
   const all = (task, what) => () => {
@@ -164,24 +137,88 @@ async function editEpisode(show, name) {
     make(task, ...clips.filter(clip => ranges.some(([from, to = from]) => +clip >= from && +clip <= to)));
   };
 
+  const top = hasEpisode => {
+    const episodeVideo = h('video', { src: `/files/${base}.mp4`, controls: true, playsInline: true });
+    const publish = h('button', { textContent: data.status === 'published' ? 'Unpublish' : 'Publish' });
+    publish.onclick = () => {
+      data.status = data.status === 'published' ? 'draft' : 'published';
+      publish.textContent = data.status === 'published' ? 'Unpublish' : 'Publish';
+      save();
+    };
+    return h('div', {},
+      h('button', { textContent: '← Back', onclick: home }),
+      h('h2', { textContent: `${show.title} · ${name} · ${data.title || ''}` }),
+      h('div', { className: 'row' },
+        h('button', { textContent: 'Draw all frames', onclick: all('Draw', 'Draw the frame') }),
+        h('button', { textContent: 'Make all videos', onclick: all('Animate', 'Make the video') }),
+        h('button', { textContent: 'Send notes and cuts', onclick: ask }),
+        hasEpisode ? publish : null,
+        hasEpisode ? subtitles(episodeVideo, `/files/${base}`) : null),
+      ...(hasEpisode ? [episodeVideo, notes(episodeVideo)] : [notes({})]));
+  };
+
+  const update = async () => {
+    await saved;
+    const before = saves;
+    const [json, folder, outside, script] = await Promise.all([getJson(`${base}.json`), list(`${base}/`), list(base),
+      fetch(`/files/${base}/clips.md`).then(r => (r.ok ? r.text() : ''))]);
+    // A note or cut saved meanwhile may be missing from what was just loaded; the next load will have it.
+    if (saves !== before) return;
+    Object.assign(data, { trims: {}, notes: [] }, json);
+    // Each shot may have a first frame (01.png) and a video (01.mp4); the episode is joined into epNN.mp4.
+    files = folder.files.map(f => f.split('/').pop());
+    const hasEpisode = outside.files.includes(`${base}.mp4`);
+    Object.keys(pending).filter(key => key.startsWith(`${base}/`) && files.includes(key.slice(base.length + 1))).forEach(key => delete pending[key]);
+    localStorage.setItem('pending', JSON.stringify(pending));
+
+    // The director's clips.md has "# Scene N" sections with a "## 01" section per shot; show each shot's prompts,
+    // and the scene picture and reference images its frame is drawn from.
+    shots = new Map();
+    let scene;
+    script.split(/^## /m).forEach((section, i) => {
+      const [id, ...lines] = section.trim().split('\n');
+      const refs = (lines.find(line => line.startsWith('Refs:')) || 'Refs:').slice(5).split(',').map(ref => ref.trim()).filter(Boolean);
+      if (i) shots.set(id.trim(), {
+        description: lines.filter(line => !/^(#|Refs:|Length:|Layout:)/.test(line)).join('\n').trim(),
+        sources: [scene && `${base}/scene-${scene}.png`, ...refs.map(ref => `shows/${show.id}/refs/${ref}.png`)].filter(Boolean),
+      });
+      scene = section.match(/^# Scene (\d+)/m)?.[1] ?? scene;
+    });
+    clips = [...shots.keys()];
+
+    // Each part is [id, what it shows, how to build it].
+    place(root, [
+      ['top', [hasEpisode, data.title], () => top(hasEpisode)],
+      ...files.filter(f => /^scene-\d+\.png$/.test(f)).map(f => [f, '', () => h('div', { className: 'clip' },
+        h('h3', { textContent: f.slice(0, -4) }), h('img', { src: `/files/${base}/${f}` }), notes({}, f.slice(0, -4)))]),
+      ['shots', '', () => h('h3', { textContent: 'Shots' })],
+      ...clips.map(clip => [clip, [shots.get(clip), ...['png', 'mp4'].map(ext => [files.includes(`${clip}.${ext}`), pending[`${base}/${clip}.${ext}`]])],
+        () => clipEditor(`/files/${base}/${clip}`, clip, files, data, save, notes, shots.get(clip), button)]),
+    ]);
+    drawNotes();
+  };
+
   history.replaceState(null, '', `#${show.id}/${name}`);
-  root.replaceChildren(
-    h('button', { textContent: '← Back', onclick: home }),
-    h('button', { className: 'refresh', textContent: '↻ Refresh', onclick: refresh }),
-    h('h2', { textContent: `${show.title} · ${name} · ${data.title || ''}` }),
-    h('div', { className: 'row' },
-      h('button', { textContent: 'Draw all frames', onclick: all('Draw', 'Draw the frame') }),
-      h('button', { textContent: 'Make all videos', onclick: all('Animate', 'Make the video') }),
-      h('button', { textContent: 'Send notes and cuts', onclick: ask }),
-      hasEpisode ? publish : null,
-      hasEpisode ? subtitles(episodeVideo, `/files/${base}`) : null),
-    ...(hasEpisode ? [episodeVideo, notes(episodeVideo)] : [notes({})]),
-    ...files.filter(f => /^scene-\d+\.png$/.test(f)).map(f => h('div', { className: 'clip' },
-      h('h3', { textContent: f.slice(0, -4) }), h('img', { src: `/files/${base}/${f}` }), notes({}, f.slice(0, -4)))),
-    h('h3', { textContent: 'Shots' }),
-    ...clips.map(clip => clipEditor(`/files/${base}/${clip}`, clip, files, data, save, notes, shots.get(clip), button)),
-  );
-  drawNotes();
+  await update();
+  timer = setInterval(() => document.hidden || update(), 15000);
+}
+
+// Puts the parts in order under parent, building a part again only when what it shows has changed. The rest stay
+// as they are, so the page doesn't jump, and a playing video or a half-typed note survives.
+function place(parent, parts) {
+  const old = new Map([...parent.children].map(el => [el.dataset.id, el]));
+  parts.forEach(([id, shows, build], i) => {
+    const key = JSON.stringify(shows);
+    let el = old.get(id);
+    if (el?.dataset.key !== key) {
+      const fresh = build();
+      Object.assign(fresh.dataset, { id, key });
+      el?.replaceWith(fresh);
+      el = fresh;
+    }
+    if (parent.children[i] !== el) parent.insertBefore(el, parent.children[i] || null);
+  });
+  while (parent.children.length > parts.length) parent.lastElementChild.remove();
 }
 
 const label = note => `${note.at != null ? `@ ${note.at}s: ` : ''}${note.text}`;
