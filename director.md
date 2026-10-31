@@ -89,7 +89,7 @@ Ru: <the line, in Russian>
 - **Refs:** the characters and things seen in this frame (up to 13). The image model copies a reference into the picture, so leave out anyone off-screen. The place comes from the scene picture.
 - **Length:** seconds, long enough for the shot's whole line; no cuts inside a shot.
 - **Sound:** only for a shot laid over an earlier shot's line, such as a reaction while someone talks or montage under a voice-over: that shot's number, as `Sound: 07`. This shot has no line and its own sound is dropped. The shots over a line replace the end of its picture, in order, so they must fit inside its Length.
-- **Frame:** the shot's first frame as a still: the scene picture's moment seen from this shot's camera. Say where the camera is and which way it looks, the framing, the light, and what each person seen does and where they look. End with the Style. For a shot that is the scene picture itself, write `Frame: scene`.
+- **Frame:** the shot's first frame as a still: the scene picture's moment seen from this shot's camera. Say where the camera is and which way it looks, the framing, the light, and for each person seen, even only a hand, whether they stand, sit or kneel, what they do and where they look. End with the Style. For a shot that is the scene picture itself, write `Frame: scene`.
 - **Video:** what moves and what is heard, from that frame on. The line followed by the speaker's Voice in brackets, word for word, and "(off-screen)" or "(voice-over)" when the speaker isn't the one seen saying it. End with the Style and "One continuous shot, no cuts."
 - **En / Ru:** the shot's line as subtitles, in English and Russian. Leave both out when no one speaks.
 
