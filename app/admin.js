@@ -14,10 +14,13 @@ const send = (url, options) => fetch(url, { ...options, headers: { authorization
 });
 const put = (path, body) => send(`/files/${encodeURI(path)}`, { method: 'PUT', body });
 // Writing and judging go to the director (Claude); drawing and animating go straight to the Grok bot.
-const post = (url, done) => task => send(url, { method: 'POST', body: JSON.stringify({ task }) })
-  .then(r => r.status !== 401 && alert(r.ok ? done : `Failed: ${r.status}`));
+const post = (url, done) => task => send(url, { method: 'POST', body: JSON.stringify({ task }) }).then(r => {
+  if (r.status !== 401 && (done || !r.ok)) alert(r.ok ? done : `Failed: ${r.status}`);
+  return r.ok;
+});
 const tellDirector = post('/api/director', 'Sent to the director');
-const tellBot = post('/api/bot', 'Sent to the Grok bot');
+// The bot's buttons spin while it works, so only a failure is worth an alert.
+const tellBot = post('/api/bot');
 
 const root = document.getElementById('admin');
 let timer; // reloads the open episode now and then
@@ -118,11 +121,11 @@ async function editEpisode(show, name) {
   // Shots sent to the bot are remembered in this browser until their file appears, and their buttons spin meanwhile.
   const pending = JSON.parse(localStorage.getItem('pending') || '{}');
   const file = (task, clip) => `${clip}.${task === 'Draw' ? 'png' : 'mp4'}`;
-  const make = (task, ...only) => {
+  const make = async (task, ...only) => {
+    if (!(await tellBot(`${task}: ${show.id} ${name}${only.map(clip => ` ${clip}`).join('')}`))) return;
     (only.length ? only : clips).filter(clip => !files.includes(file(task, clip))).forEach(clip => { pending[`${base}/${file(task, clip)}`] = true; });
     localStorage.setItem('pending', JSON.stringify(pending));
     update();
-    tellBot(`${task}: ${show.id} ${name}${only.map(clip => ` ${clip}`).join('')}`);
   };
   const button = (task, clip) => {
     const busy = pending[`${base}/${file(task, clip)}`];
