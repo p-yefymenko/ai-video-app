@@ -67,13 +67,21 @@ async function editEpisode(show, name) {
   const hasEpisode = (await list(base)).files.includes(`${base}.mp4`);
   const save = () => put(`${base}.json`, JSON.stringify(data, null, 2));
 
-  // The director's clips.md has a "## 01" section per shot; show each section's prompts with its shot.
+  // The director's clips.md has "# Scene N" sections with a "## 01" section per shot; show each shot's prompts,
+  // and the scene picture and reference images its frame is drawn from.
   const script = await fetch(`/files/${base}/clips.md`).then(r => (r.ok ? r.text() : ''));
-  const descriptions = new Map(script.split(/^## /m).slice(1).map(section => {
+  const shots = new Map();
+  let scene;
+  script.split(/^## /m).forEach((section, i) => {
     const [id, ...lines] = section.trim().split('\n');
-    return [id.trim(), lines.filter(line => !/^(#|Refs:|Length:|Layout:)/.test(line)).join('\n').trim()];
-  }));
-  const clips = [...descriptions.keys()];
+    const refs = (lines.find(line => line.startsWith('Refs:')) || 'Refs:').slice(5).split(',').map(ref => ref.trim()).filter(Boolean);
+    if (i) shots.set(id.trim(), {
+      description: lines.filter(line => !/^(#|Refs:|Length:|Layout:)/.test(line)).join('\n').trim(),
+      sources: [scene && `${base}/scene-${scene}.png`, ...refs.map(ref => `shows/${show.id}/refs/${ref}.png`)].filter(Boolean),
+    });
+    scene = section.match(/^# Scene (\d+)/m)?.[1] ?? scene;
+  });
+  const clips = [...shots.keys()];
 
   // Every video gets its own notes list. Notes without a clip belong to the whole episode.
   const lists = [];
@@ -134,17 +142,18 @@ async function editEpisode(show, name) {
     ...files.filter(f => /^scene-\d+\.png$/.test(f)).map(f => h('div', { className: 'clip' },
       h('h3', { textContent: f.slice(0, -4) }), h('img', { src: `/files/${base}/${f}` }), notes({}, f.slice(0, -4)))),
     h('h3', { textContent: 'Shots' }),
-    ...clips.map(clip => clipEditor(`/files/${base}/${clip}`, clip, files, data, save, notes, descriptions.get(clip), make)),
+    ...clips.map(clip => clipEditor(`/files/${base}/${clip}`, clip, files, data, save, notes, shots.get(clip), make)),
   );
   drawNotes();
 }
 
 const label = note => `${note.at != null ? `@ ${note.at}s: ` : ''}${note.text}`;
 
-// One shot: its prompts, its frame or its video with where to cut its start and end, and notes on it.
-// Until it has a video, buttons make its missing frame or video.
-function clipEditor(path, clip, files, data, save, notes, description, make) {
-  const summary = h('details', {}, h('summary', { textContent: description }));
+// One shot: its prompts and the pictures it is drawn from, its frame or its video with where to cut its start and end,
+// and notes on it. Until it has a video, buttons make its missing frame or video.
+function clipEditor(path, clip, files, data, save, notes, { description, sources }, make) {
+  const summary = h('div', {}, h('details', {}, h('summary', { textContent: description })),
+    h('div', { className: 'row sources' }, sources.map(src => h('a', { href: `/files/${src}`, target: '_blank' }, h('img', { src: `/files/${src}`, title: src.split('/').pop() })))));
   const hasFrame = files.includes(`${clip}.png`);
   if (!files.includes(`${clip}.mp4`)) return h('div', { className: 'clip' },
     h('h3', { textContent: `Clip ${clip}` }),
