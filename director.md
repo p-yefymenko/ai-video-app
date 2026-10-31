@@ -65,7 +65,7 @@ Direct it the way vertical micro-dramas are shot. That grammar is established; f
 - **Screen direction:** stay on one side of the line between characters. Say where each person is and looks in frame terms (frame left, frame right, up, down), and mirror the eyelines across the cut so they look at each other.
 - **Frame for the phone:** faces in the upper half; keep the bottom third quiet for subtitles and app buttons.
 
-The one thing to design around: **every shot is generated alone, from its first frame and its own text, with no memory of any other shot.** Give each shot one simple action: a line, a look, a touch, a step. Bodies that turn around or a camera circling the action come out morphed.
+The one thing to design around: **every shot is generated alone, from its first frame and its own text, with no memory of any other shot.** The models take every word literally and know nothing of the story: write plainly what the camera sees happen, at its real size, with its cause in the shot. An effect left to be understood (pebbles trembling from hooves no one sees) comes out big and strange; show the cause instead. Give each shot one simple action: a line, a look, a touch, a step. Bodies that turn around or a camera circling the action come out morphed.
 
 What holds a scene together is its **scene picture**: one shot of the people who share the scene's shots, where they stand, framed just wide enough to show them all clearly. Every frame in the scene is drawn from it as the same moment seen from another camera position, so the people, the place and where everything is stay the same from shot to shot.
 
