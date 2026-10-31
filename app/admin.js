@@ -127,7 +127,12 @@ async function editEpisode(show, name) {
 
   // Drawing and animating, for the given shots or, with none given, for every shot that still misses its file.
   const make = (task, ...only) => tellBot(`${task}: ${show.id} ${name}${only.map(clip => ` ${clip}`).join('')}`);
-  const all = (task, what) => () => confirm(`${what} for every shot that doesn't have one yet?`) && make(task);
+  const all = (task, what) => () => {
+    const answer = prompt(`${what} for which shots, such as "01-20" or "03 07"? Leave empty for every shot that doesn't have one yet.`);
+    if (answer === null) return;
+    const ranges = (answer.match(/\d+(-\d+)?/g) || []).map(range => range.split('-').map(Number));
+    make(task, ...clips.filter(clip => ranges.some(([from, to = from]) => +clip >= from && +clip <= to)));
+  };
 
   root.replaceChildren(
     h('button', { textContent: '← Back', onclick: home }),
