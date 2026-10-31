@@ -23,6 +23,8 @@ button { font: inherit; padding: 8px 12px; border: 0; border-radius: 8px; backgr
 .admin textarea { width: 100%; min-height: 100px; }
 .admin input, .admin textarea { font: inherit; padding: 8px; border-radius: 8px; border: 1px solid #444; background: #000; color: #eee; }
 .admin .refresh { position: fixed; right: 16px; bottom: 16px; z-index: 1; background: #2a6; }
+.busy::before { content: ''; display: inline-block; width: 10px; height: 10px; margin-right: 8px; border: 2px solid #777; border-top-color: #fff; border-radius: 50%; animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
 .admin .clip .sources img { width: 56px; height: 100px; object-fit: cover; border-radius: 6px; }
 .row { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0; }
 .row input:not([type=number]) { flex: 1; }

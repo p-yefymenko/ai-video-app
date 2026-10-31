@@ -135,7 +135,21 @@ async function editEpisode(show, name) {
   };
 
   // Drawing and animating, for the given shots or, with none given, for every shot that still misses its file.
-  const make = (task, ...only) => tellBot(`${task}: ${show.id} ${name}${only.map(clip => ` ${clip}`).join('')}`);
+  // Shots sent to the bot are remembered in this browser until their file appears, and their buttons spin meanwhile.
+  const pending = JSON.parse(localStorage.getItem('pending') || '{}');
+  Object.keys(pending).filter(key => key.startsWith(`${base}/`) && files.includes(key.slice(base.length + 1))).forEach(key => delete pending[key]);
+  localStorage.setItem('pending', JSON.stringify(pending));
+  const file = (task, clip) => `${clip}.${task === 'Draw' ? 'png' : 'mp4'}`;
+  const make = (task, ...only) => {
+    (only.length ? only : clips).filter(clip => !files.includes(file(task, clip))).forEach(clip => { pending[`${base}/${file(task, clip)}`] = true; });
+    localStorage.setItem('pending', JSON.stringify(pending));
+    return tellBot(`${task}: ${show.id} ${name}${only.map(clip => ` ${clip}`).join('')}`).then(refresh);
+  };
+  const button = (task, clip) => {
+    const busy = pending[`${base}/${file(task, clip)}`];
+    return h('button', { className: busy ? 'busy' : '', textContent: task === 'Draw' ? 'Draw frame' : 'Make video',
+      onclick: () => (!busy || confirm('Already sent to the Grok bot. Send again?')) && make(task, clip) });
+  };
   // Draws the episode again with what is new, staying at the shot on screen.
   const refresh = async () => {
     const shown = [...root.querySelectorAll('.clip')].find(el => el.getBoundingClientRect().bottom > 0)?.querySelector('h3').textContent;
@@ -165,7 +179,7 @@ async function editEpisode(show, name) {
     ...files.filter(f => /^scene-\d+\.png$/.test(f)).map(f => h('div', { className: 'clip' },
       h('h3', { textContent: f.slice(0, -4) }), h('img', { src: `/files/${base}/${f}` }), notes({}, f.slice(0, -4)))),
     h('h3', { textContent: 'Shots' }),
-    ...clips.map(clip => clipEditor(`/files/${base}/${clip}`, clip, files, data, save, notes, shots.get(clip), make)),
+    ...clips.map(clip => clipEditor(`/files/${base}/${clip}`, clip, files, data, save, notes, shots.get(clip), button)),
   );
   drawNotes();
 }
@@ -174,7 +188,7 @@ const label = note => `${note.at != null ? `@ ${note.at}s: ` : ''}${note.text}`;
 
 // One shot: its prompts and the pictures it is drawn from, its frame or its video with where to cut its start and end,
 // and notes on it. Until it has a video, buttons make its missing frame or video.
-function clipEditor(path, clip, files, data, save, notes, { description, sources }, make) {
+function clipEditor(path, clip, files, data, save, notes, { description, sources }, button) {
   const summary = h('div', {}, h('details', {}, h('summary', { textContent: description })),
     h('div', { className: 'row sources' }, sources.map(src => h('a', { href: `/files/${src}`, target: '_blank' }, h('img', { src: `/files/${src}`, title: src.split('/').pop() })))));
   const hasFrame = files.includes(`${clip}.png`);
@@ -183,8 +197,8 @@ function clipEditor(path, clip, files, data, save, notes, { description, sources
     summary,
     hasFrame ? h('img', { src: `${path}.png` }) : null,
     h('div', { className: 'row' },
-      hasFrame ? null : h('button', { textContent: 'Draw frame', onclick: () => make('Draw', clip) }),
-      h('button', { textContent: 'Make video', onclick: () => make('Animate', clip) })),
+      hasFrame ? null : button('Draw', clip),
+      button('Animate', clip)),
     notes({}, clip));
 
   const video = h('video', { src: `${path}.mp4`, controls: true, playsInline: true, preload: 'metadata' });
