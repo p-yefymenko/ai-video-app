@@ -200,7 +200,7 @@ async function editEpisode(show, name) {
     place(root, [
       ['top', [episode, data.title], () => top(episode, url(`${clips[0]}.png`))],
       ...files.filter(f => /^scene-\d+\.png$/.test(f)).map(f => [f, url(f), () => h('div', { className: 'clip' },
-        h('h3', { textContent: f.slice(0, -4) }), h('img', { src: url(f) }), notes({}, f.slice(0, -4)))]),
+        h('h3', { textContent: f.slice(0, -4) }), h('img', { loading: 'lazy', src: url(f) }), notes({}, f.slice(0, -4)))]),
       ['shots', '', () => h('h3', { textContent: 'Shots' })],
       ...clips.map(clip => [clip, [shots.get(clip), ...['png', 'mp4'].map(ext => [url(`${clip}.${ext}`), pending[`${base}/${clip}.${ext}`]])],
         () => clipEditor(ext => url(`${clip}.${ext}`), clip, files, data, save, notes, shots.get(clip), button)]),
@@ -235,7 +235,7 @@ function place(parent, parts) {
 // putting the one played before back to its frame.
 let stopVideo;
 function tapToPlay(video, src, poster) {
-  const frame = poster ? h('img', { src: poster, className: 'play' }) : h('button', { textContent: 'Play' });
+  const frame = poster ? h('img', { loading: 'lazy', src: poster, className: 'play' }) : h('button', { textContent: 'Play' });
   frame.onclick = () => {
     stopVideo?.();
     frame.replaceWith(video);
@@ -243,6 +243,8 @@ function tapToPlay(video, src, poster) {
     video.play().catch(() => {});
     stopVideo = () => { video.pause(); video.removeAttribute('src'); video.load(); video.replaceWith(frame); };
   };
+  // Says why a video won't play, since a phone only shows a crossed-out play button.
+  video.onerror = () => video.getAttribute('src') && video.after(h('p', { textContent: `Can't play: error ${video.error.code} ${video.error.message}` }));
   return frame;
 }
 
@@ -252,12 +254,12 @@ const label = note => `${note.at != null ? `@ ${note.at}s: ` : ''}${note.text}`;
 // and notes on it. Until it has a video, buttons make its missing frame or video.
 function clipEditor(url, clip, files, data, save, notes, { description, sources }, button) {
   const summary = h('div', {}, h('details', {}, h('summary', { textContent: description })),
-    h('div', { className: 'row sources' }, sources.map(src => h('a', { href: src, target: '_blank' }, h('img', { src, title: src.split('/').pop().split('?')[0] })))));
+    h('div', { className: 'row sources' }, sources.map(src => h('a', { href: src, target: '_blank' }, h('img', { loading: 'lazy', src, title: src.split('/').pop().split('?')[0] })))));
   const hasFrame = files.includes(`${clip}.png`);
   if (!files.includes(`${clip}.mp4`)) return h('div', { className: 'clip' },
     h('h3', { textContent: `Clip ${clip}` }),
     summary,
-    hasFrame ? h('img', { src: url('png') }) : null,
+    hasFrame ? h('img', { loading: 'lazy', src: url('png') }) : null,
     h('div', { className: 'row' },
       hasFrame ? null : button('Draw', clip),
       button('Animate', clip)),
