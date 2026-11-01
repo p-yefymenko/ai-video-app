@@ -50,16 +50,19 @@ export default {
   },
 };
 
-// Serves a file, with byte ranges so videos can seek.
+// Serves a file, with byte ranges so videos can seek. A range of a file that has changed since (If-Range)
+// gets the whole new file, or the phone would splice the old and new files together.
 async function read(env, key, req) {
-  const obj = await env.BUCKET.get(key, { range: req.headers, onlyIf: req.headers });
+  const ifRange = req.headers.get('if-range');
+  const ranged = req.headers.has('range') && (!ifRange || ifRange === (await env.BUCKET.head(key))?.httpEtag);
+  const obj = await env.BUCKET.get(key, ranged ? { range: req.headers } : { onlyIf: req.headers });
   if (!obj) return new Response('Not found', { status: 404 });
 
   const headers = new Headers({ etag: obj.httpEtag, 'accept-ranges': 'bytes', 'cache-control': 'no-cache' });
   obj.writeHttpMetadata(headers);
   if (!obj.body) return new Response(null, { status: 304, headers });
 
-  if (obj.range && req.headers.has('range')) {
+  if (ranged && obj.range) {
     const offset = obj.range.offset ?? obj.size - obj.range.suffix;
     const length = obj.range.length ?? obj.size - offset;
     headers.set('content-range', `bytes ${offset}-${offset + length - 1}/${obj.size}`);
