@@ -231,6 +231,8 @@ function place(parent, parts) {
   while (parent.children.length > parts.length) parent.lastElementChild.remove();
 }
 
+let stopShot;
+
 const label = note => `${note.at != null ? `@ ${note.at}s: ` : ''}${note.text}`;
 
 // One shot: its prompts and the pictures it is drawn from, its frame or its video with where to cut its start and end,
@@ -248,7 +250,17 @@ function clipEditor(url, clip, files, data, save, notes, { description, sources 
       button('Animate', clip)),
     notes({}, clip));
 
-  const video = h('video', { src: url('mp4'), controls: true, playsInline: true, preload: 'metadata' });
+  // iPhones play only about 16 videos on a page, so a shot shows its frame and loads its video when the frame is
+  // tapped, putting the shot played before back to its frame.
+  const video = h('video', { controls: true, playsInline: true });
+  const frame = hasFrame ? h('img', { src: url('png'), className: 'play' }) : h('button', { textContent: 'Play' });
+  frame.onclick = () => {
+    stopShot?.();
+    frame.replaceWith(video);
+    video.src = url('mp4');
+    video.play().catch(() => {});
+    stopShot = () => { video.pause(); video.removeAttribute('src'); video.load(); video.replaceWith(frame); };
+  };
   const trim = data.trims[clip] || {};
   const start = h('input', { type: 'number', step: 0.1, placeholder: 'start', value: trim.start ?? '' });
   const end = h('input', { type: 'number', step: 0.1, placeholder: 'end', value: trim.end ?? '' });
@@ -271,7 +283,7 @@ function clipEditor(url, clip, files, data, save, notes, { description, sources 
   return h('div', { className: 'clip' },
     h('h3', { textContent: `Clip ${clip}` }),
     summary,
-    video,
+    frame,
     h('div', { className: 'row' }, start, h('button', { textContent: 'Start here', onclick: here(start) }), end, h('button', { textContent: 'End here', onclick: here(end) })),
     notes(video, clip));
 }

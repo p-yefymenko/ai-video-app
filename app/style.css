@@ -25,6 +25,7 @@ video::cue { background: none; font-weight: 600; text-shadow: 0 0 3px #000, 0 0 
 .admin video, .admin .clip img { display: block; width: 100%; aspect-ratio: 9 / 16; max-height: 70vh; object-fit: contain; background: #000; }
 .admin textarea { width: 100%; min-height: 100px; }
 .admin input, .admin textarea { font: inherit; padding: 8px; border-radius: 8px; border: 1px solid #444; background: #000; color: #eee; }
+.admin img.play { cursor: pointer; border-bottom: 3px solid #8cf; }
 .busy::before { content: ''; display: inline-block; width: 10px; height: 10px; margin-right: 8px; border: 2px solid #777; border-top-color: #fff; border-radius: 50%; animation: spin 1s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .admin .clip .sources img { width: 56px; height: 100px; object-fit: cover; border-radius: 6px; }
