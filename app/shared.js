@@ -7,16 +7,27 @@ function h(tag, props = {}, ...children) {
   return el;
 }
 
-// Adds an episode's subtitles (epNN.en.vtt, epNN.ru.vtt) to its video and returns a button that switches them Off → EN → RU.
-// The choice is remembered and applies to every video.
+// An episode's subtitles (epNN.en.vtt, epNN.ru.vtt): returns [the current line, a button that switches them Off → EN → RU].
+// The page draws the line itself: an iPhone refuses to play a video that has <track>s. The choice applies to every video.
 const languages = ['off', 'en', 'ru'];
 function subtitles(video, base) {
-  languages.slice(1).forEach(lang => video.append(h('track', { kind: 'subtitles', srclang: lang, label: lang.toUpperCase(), src: `${base}.${lang}.vtt` })));
+  const line = h('p', { className: 'cue' });
   const button = h('button', { className: 'subs' });
-  const show = () => {
+  const cues = {};
+  const seconds = time => time.split(':').reduce((total, part) => total * 60 + +part, 0);
+  const load = lang => (cues[lang] ??= fetch(`${base}.${lang}.vtt`).then(r => (r.ok ? r.text() : '')).then(text => text.split(/\n\n+/)
+    .map(block => block.match(/([\d:.]+) --> ([\d:.]+).*\n([\s\S]+)/)).filter(Boolean)
+    .map(([, start, end, text]) => ({ start: seconds(start), end: seconds(end), text: text.trim() }))));
+  const draw = async () => {
     const lang = localStorage.getItem('subtitles') || 'off';
-    [...video.textTracks].forEach(track => { track.mode = track.language === lang ? 'showing' : 'disabled'; });
-    button.textContent = `Subtitles: ${lang.toUpperCase()}`;
+    const now = lang === 'off' ? [] : await load(lang);
+    line.textContent = now.find(cue => video.currentTime >= cue.start && video.currentTime < cue.end)?.text || '';
+  };
+  video.addEventListener('timeupdate', draw);
+  video.addEventListener('seeked', draw);
+  const show = () => {
+    button.textContent = `Subtitles: ${(localStorage.getItem('subtitles') || 'off').toUpperCase()}`;
+    draw();
   };
   button.onclick = () => {
     const next = languages[(languages.indexOf(localStorage.getItem('subtitles') || 'off') + 1) % languages.length];
@@ -25,7 +36,7 @@ function subtitles(video, base) {
   };
   document.addEventListener('subtitles', show);
   show();
-  return button;
+  return [line, button];
 }
 
 const list = prefix => fetch(`/api/list?prefix=${encodeURIComponent(prefix)}`).then(r => r.json());

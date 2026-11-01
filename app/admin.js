@@ -144,6 +144,7 @@ async function editEpisode(show, name) {
   const top = (episode, poster) => {
     const hasEpisode = Boolean(episode);
     const episodeVideo = h('video', { controls: true, playsInline: true });
+    const [line, subs] = subtitles(episodeVideo, `/files/${base}`);
     const publish = h('button', { textContent: data.status === 'published' ? 'Unpublish' : 'Publish' });
     publish.onclick = () => {
       data.status = data.status === 'published' ? 'draft' : 'published';
@@ -158,8 +159,8 @@ async function editEpisode(show, name) {
         h('button', { textContent: 'Make all videos', onclick: all('Animate', 'Make the video') }),
         h('button', { textContent: 'Send notes and cuts', onclick: ask }),
         hasEpisode ? publish : null,
-        hasEpisode ? subtitles(episodeVideo, `/files/${base}`) : null),
-      ...(hasEpisode ? [tapToPlay(episodeVideo, episode, poster), notes(episodeVideo)] : [notes({})]));
+        hasEpisode ? subs : null),
+      ...(hasEpisode ? [tapToPlay(episodeVideo, episode, poster), line, notes(episodeVideo)] : [notes({})]));
   };
 
   const update = async () => {
