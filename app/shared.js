@@ -35,9 +35,9 @@ const getJson = key => fetch(`/files/${key}`).then(r => (r.ok ? r.json() : null)
 async function loadShows() {
   const { folders } = await list('shows/');
   return Promise.all(folders.map(async folder => {
-    const [show, { files }] = await Promise.all([getJson(`${folder}show.json`), list(folder)]);
+    const [show, { files, etags }] = await Promise.all([getJson(`${folder}show.json`), list(folder)]);
     const episodeFiles = files.filter(f => /ep\d+\.json$/.test(f)).sort();
-    const episodes = await Promise.all(episodeFiles.map(async f => ({ name: f.match(/(ep\d+)\.json$/)[1], ...(await getJson(f)) })));
+    const episodes = await Promise.all(episodeFiles.map(async f => ({ name: f.match(/(ep\d+)\.json$/)[1], etag: etags[f.replace(/json$/, 'mp4')], ...(await getJson(f)) })));
     return { id: folder.split('/')[1], ...show, episodes };
   }));
 }

@@ -27,7 +27,8 @@ function openFeed(show, episodes) {
     h('button', { className: 'close', textContent: '×', onclick: () => history.back() }),
     ...episodes.map(ep => {
       const base = `/files/shows/${show.id}/${ep.name}`;
-      const video = h('video', { src: `${base}.mp4`, playsInline: true, preload: 'metadata' });
+      // The address carries the etag, so a phone never mixes a cached older join with the new one.
+      const video = h('video', { src: `${base}.mp4?v=${ep.etag}`, playsInline: true, preload: 'metadata' });
       video.onclick = () => (video.muted ? (video.muted = false) : video.paused ? video.play() : video.pause());
       video.onended = () => video.parentElement.nextElementSibling?.scrollIntoView({ behavior: 'smooth' });
       observer.observe(video);

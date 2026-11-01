@@ -140,8 +140,10 @@ async function editEpisode(show, name) {
     make(task, ...clips.filter(clip => ranges.some(([from, to = from]) => +clip >= from && +clip <= to)));
   };
 
-  const top = hasEpisode => {
-    const episodeVideo = h('video', { src: `/files/${base}.mp4`, controls: true, playsInline: true });
+  // The episode's address carries its etag too: a phone that cached part of an older join would otherwise mix the two.
+  const top = episode => {
+    const hasEpisode = Boolean(episode);
+    const episodeVideo = h('video', { src: episode, controls: true, playsInline: true });
     const publish = h('button', { textContent: data.status === 'published' ? 'Unpublish' : 'Publish' });
     publish.onclick = () => {
       data.status = data.status === 'published' ? 'draft' : 'published';
@@ -172,7 +174,7 @@ async function editEpisode(show, name) {
     files = folder.files.map(f => f.split('/').pop());
     // A file's address carries its etag, so a redrawn picture or remade video shows up instead of the old one.
     const url = f => files.includes(f) && `/files/${base}/${f}?v=${folder.etags[`${base}/${f}`]}`;
-    const hasEpisode = outside.files.includes(`${base}.mp4`);
+    const episode = outside.files.includes(`${base}.mp4`) && `/files/${base}.mp4?v=${outside.etags[`${base}.mp4`]}`;
     Object.keys(pending).filter(key => key.startsWith(`${base}/`) && files.includes(key.slice(base.length + 1))).forEach(key => delete pending[key]);
     localStorage.setItem('pending', JSON.stringify(pending));
 
@@ -196,7 +198,7 @@ async function editEpisode(show, name) {
 
     // Each part is [id, what it shows, how to build it].
     place(root, [
-      ['top', [hasEpisode, data.title], () => top(hasEpisode)],
+      ['top', [episode, data.title], () => top(episode)],
       ...files.filter(f => /^scene-\d+\.png$/.test(f)).map(f => [f, url(f), () => h('div', { className: 'clip' },
         h('h3', { textContent: f.slice(0, -4) }), h('img', { src: url(f) }), notes({}, f.slice(0, -4)))]),
       ['shots', '', () => h('h3', { textContent: 'Shots' })],
