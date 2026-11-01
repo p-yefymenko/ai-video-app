@@ -290,14 +290,19 @@ function clipEditor(url, clip, files, data, save, notes, { description, sources 
   const here = input => () => { input.value = video.currentTime.toFixed(1); setTrim(); };
 
   // Plays only the kept part: starts at the cut start and pauses at the cut end. Dragging past the end still works.
-  // From the fade second the picture goes black over half a second, as it will in the episode.
+  // While it plays, the picture goes black from the fade second over half a second, as it will in the episode.
+  // Paused, it shows the real frame (and the controls, which a darkened video would darken too).
   let last = 0;
   video.onloadedmetadata = () => { video.currentTime = +start.value || 0; };
+  const shade = () => {
+    video.style.filter = fade.value === '' || video.paused ? '' : `brightness(${Math.min(1, Math.max(0, 1 - (video.currentTime - fade.value) / 0.5))})`;
+  };
+  video.onpause = video.onplay = shade;
   video.ontimeupdate = () => {
     const stop = end.value === '' ? Infinity : +end.value;
     if (last < stop && video.currentTime >= stop) video.pause();
     last = video.currentTime;
-    video.style.filter = fade.value === '' ? '' : `brightness(${Math.min(1, Math.max(0, 1 - (video.currentTime - fade.value) / 0.5))})`;
+    shade();
   };
 
   return h('div', { className: 'clip' },
