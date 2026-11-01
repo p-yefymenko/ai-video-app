@@ -40,7 +40,7 @@ shows/<id>/epNN.mp4       the episode
 shows/<id>/epNN.en.vtt, epNN.ru.vtt   its subtitles, switched on and off in the app
 shows/<id>/epNN/clips.md  the episode's scenes and shots, with every prompt
 shows/<id>/epNN/scene-N.png   each scene's picture of its people in place; its frames are drawn from it
-shows/<id>/epNN/<clip>.png, <clip>.mp4   each shot's first frame and video
+shows/<id>/epNN/<clip>.png, <clip>.mp4   each shot's first frame and video (a shot with `From:` is drawn from that shot's frame)
 scripts/<file>            scripts uploaded from admin
 ```
 
