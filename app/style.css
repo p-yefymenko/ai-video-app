@@ -12,8 +12,15 @@ button { font: inherit; padding: 8px 12px; border: 0; border-radius: 8px; backgr
 .feed { position: fixed; inset: 0; overflow-y: scroll; scroll-snap-type: y mandatory; background: #000; }
 .feed section { position: relative; height: 100dvh; scroll-snap-align: start; }
 .feed video { width: 100%; height: 100%; object-fit: contain; }
-.cue { margin: 8px 0; min-height: 2.6em; white-space: pre-line; text-align: center; font-weight: 600; text-shadow: 0 0 3px #000, 0 0 3px #000, 0 1px 4px #000; }
-.feed .cue { position: absolute; top: 70%; left: 0; right: 0; width: min(100%, 56.25dvh); margin: auto; padding: 0 16px; font-size: calc(min(100vw, 56.25dvh) / 18); pointer-events: none; }
+/* Subtitles, drawn over the picture 70% down; the picture is 9:16, so its width follows the height. */
+.cue { position: absolute; top: 70%; left: 0; right: 0; margin: auto; padding: 0 12px; white-space: pre-line; text-align: center; font-weight: 600; text-shadow: 0 0 3px #000, 0 0 3px #000, 0 1px 4px #000; pointer-events: none; }
+.feed .cue, .player.full .cue { width: min(100%, 56.25dvh); font-size: calc(min(100vw, 56.25dvh) / 18); }
+.player { position: relative; }
+.player .cue { width: min(100%, 39.4vh); }
+.player.full { position: fixed; inset: 0; z-index: 2; background: #000; }
+.admin .player.full video { height: 100%; max-height: none; aspect-ratio: auto; }
+.player .close { display: none; }
+.player.full .close { display: block; position: absolute; top: 16px; left: 16px; font-size: 24px; background: #0008; }
 .feed .label { position: absolute; left: 16px; bottom: 24px; margin: 0; text-shadow: 0 1px 4px #000; }
 .feed .subs { position: absolute; right: 16px; bottom: 16px; background: #0008; }
 .feed .close { position: fixed; top: 16px; left: 16px; z-index: 1; font-size: 24px; background: #0008; }

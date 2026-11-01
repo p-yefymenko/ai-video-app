@@ -145,6 +145,13 @@ async function editEpisode(show, name) {
     const hasEpisode = Boolean(episode);
     const episodeVideo = h('video', { controls: true, playsInline: true });
     const [line, subs] = subtitles(episodeVideo, `/files/${base}`);
+    // The subtitles are drawn over the video, so full screen is the page's own: the video's full screen button
+    // (which would hide them) switches to it too.
+    const player = h('div', { className: 'player' }, tapToPlay(episodeVideo, episode, poster), line,
+      h('button', { className: 'close', textContent: '×', onclick: () => player.classList.remove('full') }));
+    const full = () => player.classList.add('full');
+    episodeVideo.addEventListener('webkitbeginfullscreen', () => { episodeVideo.webkitExitFullscreen(); full(); });
+    document.addEventListener('fullscreenchange', () => document.fullscreenElement === episodeVideo && document.exitFullscreen().then(full));
     const publish = h('button', { textContent: data.status === 'published' ? 'Unpublish' : 'Publish' });
     publish.onclick = () => {
       data.status = data.status === 'published' ? 'draft' : 'published';
@@ -159,8 +166,9 @@ async function editEpisode(show, name) {
         h('button', { textContent: 'Make all videos', onclick: all('Animate', 'Make the video') }),
         h('button', { textContent: 'Send notes and cuts', onclick: ask }),
         hasEpisode ? publish : null,
-        hasEpisode ? subs : null),
-      ...(hasEpisode ? [tapToPlay(episodeVideo, episode, poster), line, notes(episodeVideo)] : [notes({})]));
+        hasEpisode ? subs : null,
+        hasEpisode ? h('button', { textContent: 'Full screen', onclick: full }) : null),
+      ...(hasEpisode ? [player, notes(episodeVideo)] : [notes({})]));
   };
 
   const update = async () => {
