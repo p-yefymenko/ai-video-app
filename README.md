@@ -33,7 +33,7 @@ All data is files in one R2 bucket. `worker.js` serves them (anyone can read; wr
 ```
 shows/<id>/show.json      title, description
 shows/<id>/cover.jpg
-shows/<id>/show.md        the show bible: characters, places, things, episodes
+shows/<id>/show.md        the show bible: script link, characters, places, things, episodes
 shows/<id>/refs/<ref>.png one reference image per character, place and thing
 shows/<id>/epNN.json      title, status (draft/published), trims, notes
 shows/<id>/epNN.mp4       the episode

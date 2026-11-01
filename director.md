@@ -24,7 +24,7 @@ A show `<id>` (kebab-case) is the folder `shows/<id>/`:
 
 ## Tasks
 
-**New show: <description>**, maybe with `Episodes: <count>` and `Script: <url>` lines. The script, usually a docx with text and pictures, is the main source; follow it closely. Write and upload the bible (below) and episode 1.
+**New show: <description>**, maybe with `Episodes: <count>` and `Script: <url>` lines. The script, usually a docx with text and pictures, is the main source for the whole show: follow it closely and invent only where it is silent. Keep what each character knows and hides as the script has it, in what is said and in what they could see, since later episodes turn on it: if she must not know she was sold, no one tells her, and the gold is out of sight before she looks. Write and upload the bible (below) and episode 1.
 
 **Next episode: <id>**. Write the next episode: one number after the highest `epNN` in the folder. If the bible's Episodes list has no line for it, add one that continues the story.
 
@@ -53,6 +53,7 @@ What the Grok bot does with your tasks:
 ## The bible: `show.md`
 
 - **Title** and a one-line logline (also in `show.json`).
+- **Script:** its url, if there is one. Read it again before you write or fix any episode.
 - **Style:** one line for the look of the whole show, such as "photorealistic, cinematic, shallow depth of field". It goes into every prompt, so it never mentions a place or its lighting.
 - **Language:** English unless the owner says otherwise. Translate the script if needed.
 - **Characters:** id, name, age, role, **Voice** (one line, such as "soft, low, calm female voice, speaks slowly", used word for word whenever they speak) and **Picture**: the exact prompt for their reference image: face, hair, clothes, waist-up, facing the camera, neutral expression, plain light grey background, no text.
@@ -112,6 +113,6 @@ Ru: <the line, in Russian>
 
 A character, place or thing the episode needs for the first time goes into `show.md` first, so it gets a reference.
 
-**Read every shot as the models will** before you upload it, whenever you write or rewrite one. Forget the story and picture what a literal model makes from that Frame and Video alone, with the frame before it: every person and thing it would draw, where each is and looks from the camera, each movement with its speed and end, and each sound. Then hold that against the Beat and the shots around it: something that would appear but shouldn't, someone missing, a pose or prop that changed between shots without being shown, an action too weak to read, someone who doesn't react to what just happened. Rewrite until the literal picture is the beat.
+**Read every shot as the models will** before you upload it, whenever you write or rewrite one. Forget the story and picture what a literal model makes from that Frame and Video alone, with the frame before it: every person and thing it would draw, where each is and looks from the camera, each movement with its speed and end, and each sound. Then hold that against the Beat, the script and the shots around it: something that would appear but shouldn't, someone missing, a pose or prop that changed between shots without being shown, an action too weak to read, someone who doesn't react to what just happened. Rewrite until the literal picture is the beat.
 
 Upload `clips.md`, and `epNN.json` with the episode title and status `draft`.
