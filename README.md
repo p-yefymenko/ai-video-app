@@ -4,15 +4,15 @@ A vertical micro-drama app (like ReelShort) whose shows are made by AI. Hand it 
 
 Three parts, each doing what it's best at:
 
-- **The director** is Claude (Opus), a Claude Code routine in the cloud. It writes the show bible, directs each episode as shots, writes every image and video prompt, checks the drawn frames, and turns the owner's notes into fixes. Instructions: `director.md`.
-- **The Grok bot** draws and animates exactly the director's prompts, joins the clips with ffmpeg, and uploads the episode. Instructions: `bot.md`.
+- **The director** is Claude (Opus), a Claude Code routine in the cloud. It writes the show bible, directs each episode as shots, writes every image and video prompt, checks the drawn frames, turns the owner's notes into fixes, and joins the clips into the episode with ffmpeg. Instructions: `director.md`.
+- **The Grok bot** draws and animates exactly the director's prompts; its generations are kept for that alone. Instructions: `bot.md`.
 - **The app** is a web app on Cloudflare (free tier) that viewers install from the browser on any phone. It also stores everything, and the director and the bot work through it.
 
 ## How it works
 
 1. **New show:** in the admin page, attach the script (or type a description), optionally set how many episodes, and press Create. The director plans the whole story (episode 1 runs 2–3 minutes, the rest about 90 seconds) and writes episode 1 as shots, each with its prompts.
 2. **Shots:** the episode appears in admin with every shot's prompts. Press **Draw frame** or **Make video** next to a shot, or **Draw all frames** / **Make all videos** for a range of shots (such as `01-20`) or all of them. The Grok bot makes only what is missing, and the director checks each drawn frame. A video without a frame is made from the reference images alone.
-3. **Review:** leave notes on a frame, a clip, or a second of the episode, or set where a clip should start and end, then press **Send notes and cuts**. The director rewrites the shots and deletes what must be remade; its buttons come back. Once every shot has a video, the bot joins them into the episode, with music under it that changes where the mood does (the bot can't make music, so those tracks are made in Gemini by hand; **Make all videos** joins the episode again).
+3. **Review:** leave notes on a frame, a clip, or a second of the episode, or set where a clip should start and end, then press **Send notes and cuts**. The director rewrites the shots and deletes what must be remade; its buttons come back. Once every shot has a video, the director joins them into the episode, with music under it that changes where the mood does (those tracks are made in Gemini by hand; **Join episode** joins it again).
 4. **Publish**, then **Next episode**. When the script runs out, the director continues the story itself.
 
 ```
@@ -22,7 +22,7 @@ admin ──New show / Next episode / Fix──▶ director (Claude)
                           └──── Frames ready ──┘
 ```
 
-Tasks to the director: `New show: …`, `Next episode: <id>`, `Fix: <id> <epNN>`, `Frames ready: <id> <epNN> <clips>`. Tasks to the Grok bot: `Draw: <id> <epNN> [clips]`, `Animate: <id> <epNN> [clips]` (no clips means every shot).
+Tasks to the director: `New show: …`, `Next episode: <id>`, `Fix: <id> <epNN>`, `Frames ready: <id> <epNN> <clips>`, `Join: <id> <epNN>`. Tasks to the Grok bot: `Draw: <id> <epNN> [clips]`, `Animate: <id> <epNN> [clips]` (no clips means every shot).
 
 **Consistency:** every scene first gets one picture of its group of people in place, drawn from the reference images; each frame is drawn from the frame before it in its scene, a second later from another camera, with the scene picture beside it, and a video starts from its frame when the shot has one. Nothing is generated without the owner asking, except that the director redraws a broken frame at most once.
 

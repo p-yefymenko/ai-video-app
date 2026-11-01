@@ -165,6 +165,7 @@ async function editEpisode(show, name) {
         h('button', { textContent: 'Draw all frames', onclick: all('Draw', 'Draw the frame') }),
         h('button', { textContent: 'Make all videos', onclick: all('Animate', 'Make the video') }),
         h('button', { textContent: 'Send notes and cuts', onclick: ask }),
+        h('button', { textContent: 'Join episode', onclick: () => tellDirector(`Join: ${show.id} ${name}`) }),
         hasEpisode ? publish : null,
         hasEpisode ? subs : null,
         hasEpisode ? h('button', { textContent: 'Full screen', onclick: full }) : null),
