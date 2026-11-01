@@ -5,7 +5,7 @@
 // Anyone can read. Writing needs the admin key.
 // /api/director wakes Claude (the director routine), /api/bot wakes the Grok bot. Both take {"task": "..."}.
 
-const TYPES = { mp4: 'video/mp4', json: 'application/json', jpg: 'image/jpeg', png: 'image/png', md: 'text/markdown; charset=utf-8' };
+const TYPES = { mp4: 'video/mp4', mp3: 'audio/mpeg', vtt: 'text/vtt; charset=utf-8', json: 'application/json', jpg: 'image/jpeg', png: 'image/png', md: 'text/markdown; charset=utf-8' };
 
 export default {
   async fetch(req, env) {
@@ -60,6 +60,8 @@ async function read(env, key, req) {
 
   const headers = new Headers({ etag: obj.httpEtag, 'accept-ranges': 'bytes', 'cache-control': 'no-cache' });
   obj.writeHttpMetadata(headers);
+  // The type comes from the name, so files uploaded before their type was known are served right too.
+  if (TYPES[key.split('.').pop()]) headers.set('content-type', TYPES[key.split('.').pop()]);
   if (!obj.body) return new Response(null, { status: 304, headers });
 
   if (ranged && obj.range) {

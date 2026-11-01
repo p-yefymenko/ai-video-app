@@ -141,9 +141,9 @@ async function editEpisode(show, name) {
   };
 
   // The episode's address carries its etag too: a phone that cached part of an older join would otherwise mix the two.
-  const top = episode => {
+  const top = (episode, poster) => {
     const hasEpisode = Boolean(episode);
-    const episodeVideo = h('video', { src: episode, controls: true, playsInline: true });
+    const episodeVideo = h('video', { controls: true, playsInline: true });
     const publish = h('button', { textContent: data.status === 'published' ? 'Unpublish' : 'Publish' });
     publish.onclick = () => {
       data.status = data.status === 'published' ? 'draft' : 'published';
@@ -159,7 +159,7 @@ async function editEpisode(show, name) {
         h('button', { textContent: 'Send notes and cuts', onclick: ask }),
         hasEpisode ? publish : null,
         hasEpisode ? subtitles(episodeVideo, `/files/${base}`) : null),
-      ...(hasEpisode ? [episodeVideo, notes(episodeVideo)] : [notes({})]));
+      ...(hasEpisode ? [tapToPlay(episodeVideo, episode, poster), notes(episodeVideo)] : [notes({})]));
   };
 
   const update = async () => {
@@ -198,7 +198,7 @@ async function editEpisode(show, name) {
 
     // Each part is [id, what it shows, how to build it].
     place(root, [
-      ['top', [episode, data.title], () => top(episode)],
+      ['top', [episode, data.title], () => top(episode, url(`${clips[0]}.png`))],
       ...files.filter(f => /^scene-\d+\.png$/.test(f)).map(f => [f, url(f), () => h('div', { className: 'clip' },
         h('h3', { textContent: f.slice(0, -4) }), h('img', { src: url(f) }), notes({}, f.slice(0, -4)))]),
       ['shots', '', () => h('h3', { textContent: 'Shots' })],
@@ -231,7 +231,20 @@ function place(parent, parts) {
   while (parent.children.length > parts.length) parent.lastElementChild.remove();
 }
 
-let stopShot;
+// iPhones play only about 16 videos on a page, so a video shows a frame and loads when the frame is tapped,
+// putting the one played before back to its frame.
+let stopVideo;
+function tapToPlay(video, src, poster) {
+  const frame = poster ? h('img', { src: poster, className: 'play' }) : h('button', { textContent: 'Play' });
+  frame.onclick = () => {
+    stopVideo?.();
+    frame.replaceWith(video);
+    video.src = src;
+    video.play().catch(() => {});
+    stopVideo = () => { video.pause(); video.removeAttribute('src'); video.load(); video.replaceWith(frame); };
+  };
+  return frame;
+}
 
 const label = note => `${note.at != null ? `@ ${note.at}s: ` : ''}${note.text}`;
 
@@ -250,17 +263,8 @@ function clipEditor(url, clip, files, data, save, notes, { description, sources 
       button('Animate', clip)),
     notes({}, clip));
 
-  // iPhones play only about 16 videos on a page, so a shot shows its frame and loads its video when the frame is
-  // tapped, putting the shot played before back to its frame.
   const video = h('video', { controls: true, playsInline: true });
-  const frame = hasFrame ? h('img', { src: url('png'), className: 'play' }) : h('button', { textContent: 'Play' });
-  frame.onclick = () => {
-    stopShot?.();
-    frame.replaceWith(video);
-    video.src = url('mp4');
-    video.play().catch(() => {});
-    stopShot = () => { video.pause(); video.removeAttribute('src'); video.load(); video.replaceWith(frame); };
-  };
+  const frame = tapToPlay(video, url('mp4'), hasFrame && url('png'));
   const trim = data.trims[clip] || {};
   const start = h('input', { type: 'number', step: 0.1, placeholder: 'start', value: trim.start ?? '' });
   const end = h('input', { type: 'number', step: 0.1, placeholder: 'end', value: trim.end ?? '' });
