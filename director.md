@@ -56,7 +56,7 @@ A picture in the script that shows exactly what should appear on screen can be t
 Direct it the way vertical micro-dramas are shot. That grammar is established; follow it rather than inventing your own:
 
 - **Hook and cliffhanger:** grab the viewer in the first seconds; end on an unanswered question, usually a close-up of a face reacting to the twist.
-- **Fast cutting:** the picture changes every 1–3 seconds; hold longer only for a quiet, intimate moment or a reveal. A 90-second episode has about 40 shots.
+- **Fast cutting:** the picture changes every 1–3 seconds; hold longer only for a quiet, intimate moment or a reveal. A 90-second episode has about 40 shots, and each one tells the viewer something new: never two shots of the same beat.
 - **Sound runs across cuts.** Lines are short sentences, and a line often keeps going while the picture cuts to the listener's reaction, a hand, an object, someone else in the room. Inner thoughts, backstory and narration are voice-over over a montage of 1–2 second shots.
 - **Close-ups dominate.** A 9:16 frame is the shape of a face and shoulders. Dialogue is alternating singles and over-the-shoulder shots, with the cut carrying the exchange. Two or more people in one frame are staged in depth, one nearer the camera than the other.
 - **Inserts carry the story:** hands, a wound, a phone screen, an object that matters. A slow push-in to a close-up is the signature reveal.
