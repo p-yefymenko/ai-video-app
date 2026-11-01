@@ -170,20 +170,23 @@ async function editEpisode(show, name) {
     Object.assign(data, { trims: {}, notes: [] }, json);
     // Each shot may have a first frame (01.png) and a video (01.mp4); the episode is joined into epNN.mp4.
     files = folder.files.map(f => f.split('/').pop());
+    // A file's address carries its etag, so a redrawn picture or remade video shows up instead of the old one.
+    const url = f => files.includes(f) && `/files/${base}/${f}?v=${folder.etags[`${base}/${f}`]}`;
     const hasEpisode = outside.files.includes(`${base}.mp4`);
     Object.keys(pending).filter(key => key.startsWith(`${base}/`) && files.includes(key.slice(base.length + 1))).forEach(key => delete pending[key]);
     localStorage.setItem('pending', JSON.stringify(pending));
 
     // The director's clips.md has "# Scene N" sections with a "## 01" section per shot; show each shot's prompts,
-    // and the scene picture and reference images its frame is drawn from.
+    // and the pictures its frame is drawn from: the scene picture (or, with "From: 07", that shot's frame) and its refs.
     shots = new Map();
     let scene;
     script.split(/^## /m).forEach((section, i) => {
       const [id, ...lines] = section.trim().split('\n');
-      const refs = (lines.find(line => line.startsWith('Refs:')) || 'Refs:').slice(5).split(',').map(ref => ref.trim()).filter(Boolean);
+      const field = key => (lines.find(line => line.startsWith(`${key}:`)) || `${key}:`).slice(key.length + 1).trim();
+      const refs = field('Refs').split(',').map(ref => ref.trim()).filter(Boolean);
       if (i) shots.set(id.trim(), {
         description: lines.filter(line => !/^(#|Refs:|Length:|Layout:)/.test(line)).join('\n').trim(),
-        sources: [scene && `${base}/scene-${scene}.png`, ...refs.map(ref => `shows/${show.id}/refs/${ref}.png`)].filter(Boolean),
+        sources: [url(field('From') ? `${field('From')}.png` : `scene-${scene}.png`), ...refs.map(ref => `/files/shows/${show.id}/refs/${ref}.png`)].filter(Boolean),
       });
       scene = section.match(/^# Scene (\d+)/m)?.[1] ?? scene;
     });
@@ -192,11 +195,11 @@ async function editEpisode(show, name) {
     // Each part is [id, what it shows, how to build it].
     place(root, [
       ['top', [hasEpisode, data.title], () => top(hasEpisode)],
-      ...files.filter(f => /^scene-\d+\.png$/.test(f)).map(f => [f, '', () => h('div', { className: 'clip' },
-        h('h3', { textContent: f.slice(0, -4) }), h('img', { src: `/files/${base}/${f}` }), notes({}, f.slice(0, -4)))]),
+      ...files.filter(f => /^scene-\d+\.png$/.test(f)).map(f => [f, url(f), () => h('div', { className: 'clip' },
+        h('h3', { textContent: f.slice(0, -4) }), h('img', { src: url(f) }), notes({}, f.slice(0, -4)))]),
       ['shots', '', () => h('h3', { textContent: 'Shots' })],
-      ...clips.map(clip => [clip, [shots.get(clip), ...['png', 'mp4'].map(ext => [files.includes(`${clip}.${ext}`), pending[`${base}/${clip}.${ext}`]])],
-        () => clipEditor(`/files/${base}/${clip}`, clip, files, data, save, notes, shots.get(clip), button)]),
+      ...clips.map(clip => [clip, [shots.get(clip), ...['png', 'mp4'].map(ext => [url(`${clip}.${ext}`), pending[`${base}/${clip}.${ext}`]])],
+        () => clipEditor(ext => url(`${clip}.${ext}`), clip, files, data, save, notes, shots.get(clip), button)]),
     ]);
     drawNotes();
   };
@@ -228,20 +231,20 @@ const label = note => `${note.at != null ? `@ ${note.at}s: ` : ''}${note.text}`;
 
 // One shot: its prompts and the pictures it is drawn from, its frame or its video with where to cut its start and end,
 // and notes on it. Until it has a video, buttons make its missing frame or video.
-function clipEditor(path, clip, files, data, save, notes, { description, sources }, button) {
+function clipEditor(url, clip, files, data, save, notes, { description, sources }, button) {
   const summary = h('div', {}, h('details', {}, h('summary', { textContent: description })),
-    h('div', { className: 'row sources' }, sources.map(src => h('a', { href: `/files/${src}`, target: '_blank' }, h('img', { src: `/files/${src}`, title: src.split('/').pop() })))));
+    h('div', { className: 'row sources' }, sources.map(src => h('a', { href: src, target: '_blank' }, h('img', { src, title: src.split('/').pop().split('?')[0] })))));
   const hasFrame = files.includes(`${clip}.png`);
   if (!files.includes(`${clip}.mp4`)) return h('div', { className: 'clip' },
     h('h3', { textContent: `Clip ${clip}` }),
     summary,
-    hasFrame ? h('img', { src: `${path}.png` }) : null,
+    hasFrame ? h('img', { src: url('png') }) : null,
     h('div', { className: 'row' },
       hasFrame ? null : button('Draw', clip),
       button('Animate', clip)),
     notes({}, clip));
 
-  const video = h('video', { src: `${path}.mp4`, controls: true, playsInline: true, preload: 'metadata' });
+  const video = h('video', { src: url('mp4'), controls: true, playsInline: true, preload: 'metadata' });
   const trim = data.trims[clip] || {};
   const start = h('input', { type: 'number', step: 0.1, placeholder: 'start', value: trim.start ?? '' });
   const end = h('input', { type: 'number', step: 0.1, placeholder: 'end', value: trim.end ?? '' });

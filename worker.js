@@ -15,7 +15,8 @@ export default {
 
     if (path === '/api/list') {
       const list = await env.BUCKET.list({ prefix: url.searchParams.get('prefix') || '', delimiter: '/' });
-      return Response.json({ files: list.objects.map(o => o.key), folders: list.delimitedPrefixes });
+      // etags change whenever a file is replaced, so the admin page can show the new one.
+      return Response.json({ files: list.objects.map(o => o.key), folders: list.delimitedPrefixes, etags: Object.fromEntries(list.objects.map(o => [o.key, o.etag])) });
     }
 
     if ((path === '/api/director' || path === '/api/bot') && req.method === 'POST') {
