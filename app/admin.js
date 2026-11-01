@@ -111,8 +111,8 @@ async function editEpisode(show, name) {
   // Shows what the director will read from epNN.json (open notes and cuts) and asks before sending.
   const ask = () => {
     const open = data.notes.filter(n => !n.done).map(n => `• ${n.clip ? `Clip ${n.clip}` : 'Episode'}: ${label(n)}`);
-    const cuts = Object.entries(data.trims).filter(([, t]) => t.start != null || t.end != null)
-      .map(([clip, t]) => `• Clip ${clip}: keep from ${t.start ?? 0}s to ${t.end != null ? `${t.end}s` : 'the end'}`);
+    const cuts = Object.entries(data.trims).filter(([, t]) => t.start != null || t.end != null || t.fade != null)
+      .map(([clip, t]) => `• Clip ${clip}: keep from ${t.start ?? 0}s to ${t.end != null ? `${t.end}s` : 'the end'}${t.fade != null ? `, fade to black at ${t.fade}s` : ''}`);
     const summary = `Notes to fix:\n${open.join('\n') || '• none'}\n\nCuts:\n${cuts.join('\n') || '• none'}\n\nSend to the director?`;
     if (confirm(summary)) tellDirector(`Fix: ${show.id} ${name}`);
   };
@@ -280,26 +280,31 @@ function clipEditor(url, clip, files, data, save, notes, { description, sources 
   const trim = data.trims[clip] || {};
   const start = h('input', { type: 'number', step: 0.1, placeholder: 'start', value: trim.start ?? '' });
   const end = h('input', { type: 'number', step: 0.1, placeholder: 'end', value: trim.end ?? '' });
+  const fade = h('input', { type: 'number', step: 0.1, placeholder: 'fade', value: trim.fade ?? '' });
+  const number = input => (input.value === '' ? undefined : +input.value);
   const setTrim = () => {
-    data.trims[clip] = { start: start.value === '' ? undefined : +start.value, end: end.value === '' ? undefined : +end.value };
+    data.trims[clip] = { start: number(start), end: number(end), fade: number(fade) };
     save();
   };
-  start.onchange = end.onchange = setTrim;
+  start.onchange = end.onchange = fade.onchange = setTrim;
   const here = input => () => { input.value = video.currentTime.toFixed(1); setTrim(); };
 
   // Plays only the kept part: starts at the cut start and pauses at the cut end. Dragging past the end still works.
+  // From the fade second the picture goes black over half a second, as it will in the episode.
   let last = 0;
   video.onloadedmetadata = () => { video.currentTime = +start.value || 0; };
   video.ontimeupdate = () => {
     const stop = end.value === '' ? Infinity : +end.value;
     if (last < stop && video.currentTime >= stop) video.pause();
     last = video.currentTime;
+    video.style.filter = fade.value === '' ? '' : `brightness(${Math.min(1, Math.max(0, 1 - (video.currentTime - fade.value) / 0.5))})`;
   };
 
   return h('div', { className: 'clip' },
     h('h3', { textContent: `Clip ${clip}` }),
     summary,
     frame,
-    h('div', { className: 'row' }, start, h('button', { textContent: 'Start here', onclick: here(start) }), end, h('button', { textContent: 'End here', onclick: here(end) })),
+    h('div', { className: 'row' }, start, h('button', { textContent: 'Start here', onclick: here(start) }), end, h('button', { textContent: 'End here', onclick: here(end) }),
+      fade, h('button', { textContent: 'Fade here', onclick: here(fade) })),
     notes(video, clip));
 }

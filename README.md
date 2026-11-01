@@ -12,7 +12,7 @@ Three parts, each doing what it's best at:
 
 1. **New show:** in the admin page, attach the script (or type a description), optionally set how many episodes, and press Create. The director plans the whole story (episode 1 runs 2–3 minutes, the rest about 90 seconds) and writes episode 1 as shots, each with its prompts.
 2. **Shots:** the episode appears in admin with every shot's prompts. Press **Draw frame** or **Make video** next to a shot, or **Draw all frames** / **Make all videos** for a range of shots (such as `01-20`) or all of them. The Grok bot makes only what is missing, and the director checks each drawn frame. A video without a frame is made from the reference images alone.
-3. **Review:** leave notes on a frame, a clip, or a second of the episode, or set where a clip should start and end, then press **Send notes and cuts**. The director rewrites the shots and deletes what must be remade; its buttons come back. Once every shot has a video, the director joins them into the episode, with music under it that changes where the mood does (those tracks are made in Gemini by hand; **Join episode** joins it again).
+3. **Review:** leave notes on a frame, a clip, or a second of the episode, or set where a clip should start, end and fade to black, then press **Send notes and cuts**. The director rewrites the shots and deletes what must be remade; its buttons come back. Once every shot has a video, the director joins them into the episode, with music under it that changes where the mood does (those tracks are made in Gemini by hand; **Join episode** joins it again).
 4. **Publish**, then **Next episode**. When the script runs out, the director continues the story itself.
 
 ```
