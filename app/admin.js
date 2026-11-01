@@ -177,8 +177,9 @@ async function editEpisode(show, name) {
     localStorage.setItem('pending', JSON.stringify(pending));
 
     // The director's clips.md has "# Scene N" sections with a "## 01" section per shot; show each shot's prompts,
-    // and the pictures its frame is drawn from: the scene picture (or, with "From: 07", that shot's frame) and its refs.
+    // and the pictures its frame is drawn from: the frame of the shot before it in its scene, the scene picture and its refs.
     shots = new Map();
+    const last = {};
     let scene;
     script.split(/^## /m).forEach((section, i) => {
       const [id, ...lines] = section.trim().split('\n');
@@ -186,8 +187,9 @@ async function editEpisode(show, name) {
       const refs = field('Refs').split(',').map(ref => ref.trim()).filter(Boolean);
       if (i) shots.set(id.trim(), {
         description: lines.filter(line => !/^(#|Refs:|Length:|Layout:)/.test(line)).join('\n').trim(),
-        sources: [url(field('From') ? `${field('From')}.png` : `scene-${scene}.png`), ...refs.map(ref => `/files/shows/${show.id}/refs/${ref}.png`)].filter(Boolean),
+        sources: [last[scene] && url(`${last[scene]}.png`), url(`scene-${scene}.png`), ...refs.map(ref => `/files/shows/${show.id}/refs/${ref}.png`)].filter(Boolean),
       });
+      if (i) last[scene] = id.trim();
       scene = section.match(/^# Scene (\d+)/m)?.[1] ?? scene;
     });
     clips = [...shots.keys()];

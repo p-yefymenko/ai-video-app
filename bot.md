@@ -10,7 +10,7 @@ Everything lives in the app. Its address is in `$APP_URL` and its key in `$APP_K
 - Upload: `curl -X PUT -H "Authorization: Bearer $APP_KEY" --data-binary @<file> "$APP_URL/files/<path>"`.
 - Tell the director: `curl -X POST -H "Authorization: Bearer $APP_KEY" -H "content-type: application/json" -d '{"task": "Frames ready: <id> <epNN> <clips>"}' "$APP_URL/api/director"`.
 
-A show `<id>` is the app folder `shows/<id>/`: `show.md` (characters, places and things, each with an id and a **Picture** prompt), `refs/<ref>.png`, `epNN/clips.md` (scenes, each with `Refs` and a `Layout`, and their shots, each with `Refs`, `Length`, `Frame` and `Video`, and maybe `From`), `epNN/scene-N.png`, `epNN/<clip>.png`, `epNN/<clip>.mp4` and `epNN.json`. Work in `/workspace/shows/<id>/`, and download what you need from the app first.
+A show `<id>` is the app folder `shows/<id>/`: `show.md` (characters, places and things, each with an id and a **Picture** prompt), `refs/<ref>.png`, `epNN/clips.md` (scenes, each with `Refs` and a `Layout`, and their shots, each with `Refs`, `Length`, `Frame` and `Video`), `epNN/scene-N.png`, `epNN/<clip>.png`, `epNN/<clip>.mp4` and `epNN.json`. Work in `/workspace/shows/<id>/`, and download what you need from the app first.
 
 ## Tasks
 
@@ -20,7 +20,7 @@ Each task may end with a list of clips, such as `Draw: <id> ep01 03 07`. Then wo
 
 1. For every ref those shots and their scenes use without `refs/<ref>.png` in the app: generate an image from its Picture prompt in `show.md`, 9:16, and upload it there.
 2. For every scene those shots are in (the `# Scene N` header above each shot in `clips.md`; a header can repeat, and the scene's Refs and Layout are under its first one) without `epNN/scene-N.png` in the app: generate an image from its Layout prompt, 9:16, with the scene's `Refs` as reference images, and upload it there.
-3. For every one of those shots without `epNN/<clip>.png` in the app: generate an image from its Frame prompt, 9:16, with its scene picture as the first reference image and the shot's `Refs` after it, and upload it there. Introduce the scene picture as the whole scene at this moment, now seen from another camera position. A shot with `From: <clip>` uses that shot's frame instead of the scene picture (draw that one first), introduced as the moment just before, now a second later from this shot's camera. A shot whose Frame is `scene` gets a copy of its scene picture instead.
+3. For every one of those shots without `epNN/<clip>.png` in the app, in order: generate an image from its Frame prompt, 9:16, and upload it there. Its reference images are the frame of the shot before it in the same scene (the last earlier shot under a header with the same scene number; draw that one first if it is missing), then the scene picture, then the shot's `Refs`. Introduce the earlier frame as the moment just before, now a second later from this shot's camera, and the scene picture as the place and where everyone is in it. The first shot of a scene has no earlier frame. A shot whose Frame is `scene` gets a copy of its scene picture instead.
 4. Tell the director `Frames ready: <id> <epNN> <the clips you drew>`.
 
 **Animate: <id> <epNN> [clips]**
